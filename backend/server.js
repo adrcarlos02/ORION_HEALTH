@@ -6,6 +6,7 @@ import { connectCloudinary } from "./config/cloudinary.js";
 import userRouter from "./routes/userRoute.js";
 import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
+import appointmentRouter from './routes/appointmentRoute.js';
 
 // Load environment variables
 dotenv.config();
@@ -32,6 +33,7 @@ app.get("/", (req, res) => {
 app.use("/api/user", userRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/admin", adminRouter);
+app.use('/api/appointments', appointmentRouter);
 
 // Start the server
 app.listen(PORT, () => {
