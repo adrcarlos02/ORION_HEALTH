@@ -7,6 +7,7 @@ import userRouter from "./routes/userRoute.js";
 import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
 import appointmentRouter from './routes/appointmentRoute.js';
+import paymentRouter from './routes/paymentRoute.js';
 
 
 // app config
@@ -35,6 +36,7 @@ if (process.env.NODE_ENV !== "test") {
 export default app;
 app.use("/api/admin", adminRouter);
 app.use('/api/appointments', appointmentRouter);
+app.use('/api/payments', paymentRouter);
 
 // Start the server
 app.listen(PORT, () => {
