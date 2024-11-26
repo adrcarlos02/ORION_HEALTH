@@ -8,6 +8,7 @@ import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
 import appointmentRouter from './routes/appointmentRoute.js';
 
+
 // app config
 const app = express();
 const port = process.env.PORT || 7000;
@@ -32,3 +33,10 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 export default app;
+app.use("/api/admin", adminRouter);
+app.use('/api/appointments', appointmentRouter);
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
