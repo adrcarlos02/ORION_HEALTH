@@ -1,68 +1,76 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@100..900&family=Raleway:wght@100..900&family=Roboto:wght@400;700;100&display=swap');
+@import 'swiper/swiper-bundle.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Global font settings */
+* {
+  font-family: 'Public Sans', sans-serif; /* Set global font to Public Sans */
+  box-sizing: border-box; /* Ensures padding and border are included in element's total width and height */
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* Style for active Nav Links */
+.active hr {
+  @apply block border-t-2 border-blue-500; /* Adjust color as needed */
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+/* Hide the scrollbar but keep scrolling functionality */
+::-webkit-scrollbar {
+  display: none; /* Hides scrollbar for webkit browsers */
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Custom scrollbar styling for non-webkit browsers */
+* {
+  scrollbar-width: none; /* For Firefox */
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* Common Utility Classes */
+.btn-primary {
+  @apply bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg 
+         hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.form-input {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-lg 
+         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-600;
+}
+
+/* Adjustments for the Login page */
+.login-container {
+  @apply flex items-center justify-center min-h-screen bg-cover bg-center;
+}
+
+.login-form {
+  @apply w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md backdrop-blur-sm;
+}
+
+.login-heading {
+  @apply text-2xl font-bold text-center text-gray-800;
+}
+
+/* Add responsive typography */
+@media (min-width: 768px) {
+  .login-heading {
+    @apply text-3xl; /* Increase heading size on larger screens */
   }
-  a:hover {
-    color: #747bff;
+
+  .login-form {
+    @apply p-10; /* Increase padding on larger screens */
   }
-  button {
-    background-color: #f9f9f9;
-  }
+}
+
+/* Add transitions for buttons and inputs */
+.btn-primary,
+.form-input {
+  @apply transition duration-200 ease-in-out; /* Smooth transition for interactive elements */
+}
+
+/* Add hover effects for the login form */
+.login-form:hover {
+  @apply shadow-lg; /* Increase shadow on hover for depth */
 }
