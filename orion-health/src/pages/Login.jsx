@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { assets } from '../assets/assets'; 
-import { addUserProfile, checkUserCredentials } from '../assets/assets2'; 
+import axios from 'axios'; // Import Axios for HTTP requests
 
 const Login = () => {
   const bannerImages = [
@@ -27,29 +27,35 @@ const Login = () => {
     return () => clearInterval(interval);
   }, [bannerImages.length]);
 
-  const onSubmitHandler = (event) => {
+  const onSubmitHandler = async (event) => {
     event.preventDefault();
 
     if (isSigningUp) {
       // Handle sign-up logic
-      const newUser = { email, name, password };
-      if (addUserProfile(newUser)) {
-        console.log('User created:', newUser);
+      try {
+        const response = await axios.post('http://localhost:7001/register', { email, name, password });
+        console.log('User created:', response.data);
         setIsSigningUp(false); // Switch to login mode after signup
         resetFormFields(); // Reset form fields after signup
-      } else {
-        alert('User already exists. Please try a different email.');
+        alert('Account created successfully. Please log in.');
+      } catch (error) {
+        console.error('Error during sign-up:', error.response?.data || error.message);
+        alert(error.response?.data?.message || 'Sign-up failed. Please try again.');
       }
     } else {
       // Handle login logic
-      if (checkUserCredentials(email, password)) {
-        console.log('Logging in with:', email);
-        localStorage.setItem('userEmail', email); // Store the user email in local storage
-        navigate(`/my-profile/${email}`); // Redirect to MyProfile with user email as userId
+      try {
+        const response = await axios.post('http://localhost:5000/login', { email, password });
+        const { token } = response.data;
+        console.log('Logging in with token:', token);
+        localStorage.setItem('jwtToken', token); // Store the JWT in local storage
+
+        // Redirect to MyProfile
+        navigate('/my-profile');
         resetFormFields(); // Reset fields after successful login
-      } else {
-        console.log('Invalid credentials');
-        alert('Invalid email or password. Please try again.'); 
+      } catch (error) {
+        console.error('Error during login:', error.response?.data || error.message);
+        alert(error.response?.data?.message || 'Invalid email or password. Please try again.');
       }
     }
   };
@@ -66,7 +72,9 @@ const Login = () => {
       style={{ backgroundImage: `url(${bannerImages[currentImageIndex]})` }}
     >
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md backdrop-blur-sm">
-        <h2 className="text-2xl font-bold text-center text-gray-800">{isSigningUp ? 'Sign Up' : 'Login'} to Your Account</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800">
+          {isSigningUp ? 'Sign Up' : 'Login'} to Your Account
+        </h2>
         
         <form className="space-y-4" onSubmit={onSubmitHandler}>
           {isSigningUp && (
