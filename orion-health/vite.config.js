@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000, // Change to your preferred port
+    port: 7002, // Change to your preferred port
     open: true, // Automatically open the app in your browser
   },
 });
