@@ -1,14 +1,17 @@
-// src/components/Navbar.js
-import React, { useState } from "react";
+// src/components/Navbar.jsx
+import React, { useState, useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { assets } from "../assets/assets"; // Import your assets
+import { UserContext } from "../context/UserContext"; // Import UserContext
+import { assets } from "../assets/assets";
 
-const Navbar = ({ user, setUser }) => {
+const Navbar = () => {
   const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
+  const { user, setUser } = useContext(UserContext); // Use UserContext
 
   const handleLogout = () => {
     setUser(null); // Clear user state
+    localStorage.removeItem('jwtToken'); // Remove token from localStorage
     navigate("/login"); // Redirect to login page
   };
 
@@ -89,7 +92,7 @@ const Navbar = ({ user, setUser }) => {
               <>
                 <li>
                   <NavLink
-                    to={`/my-profile/${user.email}`}
+                    to="/my-profile" // Updated to remove user.email
                     className={({ isActive }) =>
                       `block py-2 pr-4 pl-3 text-gray-700 rounded md:bg-transparent md:p-0 ${
                         isActive ? "text-blue-600" : ""

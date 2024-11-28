@@ -1,13 +1,21 @@
+// routes/userRoutes.js
 import express from 'express';
-import { registerUser, loginUser, getUserProfile, updateUserProfile } from '../controllers/userController.js';
+import {
+  registerUser,
+  loginUser,
+  getUserProfile,
+  updateUserProfile,
+} from '../controllers/userController.js';
 import authUser from '../middleware/authUser.js';
 
+const router = express.Router();
 
-const userRouter = express.Router();
+// Public routes
+router.post('/register', registerUser);
+router.post('/login', loginUser);
 
-userRouter.post('/register', registerUser);
-userRouter.post('/login', loginUser);
-userRouter.get('/profile', authUser, getUserProfile);
-userRouter.put('/profile', authUser, updateUserProfile);
+// Protected routes
+router.get('/profile', authUser, getUserProfile);
+router.put('/profile', authUser, updateUserProfile);
 
-export default userRouter;
+export default router;

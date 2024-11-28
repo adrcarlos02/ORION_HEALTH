@@ -8,10 +8,14 @@ import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
 import appointmentRouter from './routes/appointmentRoute.js';
 import paymentRouter from './routes/paymentRoute.js';
+import dotenv from 'dotenv';
+
 
 // App configuration
 const app = express();
 const port = process.env.PORT || 7001;
+
+dotenv.config();
 
 // Connect to database and cloud services
 connectDB();
@@ -31,6 +35,7 @@ app.use('/api/payments', paymentRouter);
 app.get("/", (req, res) => {
   res.send("API Working");
 });
+
 
 // Start the server
 if (process.env.NODE_ENV !== "test") {

@@ -1,8 +1,9 @@
-// src/pages/Login.js
-import React, { useEffect, useState } from 'react';
+// src/pages/Login.jsx
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../context/UserContext'; // Import UserContext
 import { assets } from '../assets/assets'; 
-import axios from 'axios'; // Import Axios for HTTP requests
+import axios from '../utils/axiosInstance';
 
 const Login = () => {
   const bannerImages = [
@@ -19,11 +20,12 @@ const Login = () => {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { setUser } = useContext(UserContext); // Use setUser from UserContext
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
-    }, 3000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [bannerImages.length]);
 
@@ -33,7 +35,7 @@ const Login = () => {
     if (isSigningUp) {
       // Handle sign-up logic
       try {
-        const response = await axios.post('http://localhost:7001/register', { email, name, password });
+        const response = await axios.post('/users/register', { email, name, password });
         console.log('User created:', response.data);
         setIsSigningUp(false); // Switch to login mode after signup
         resetFormFields(); // Reset form fields after signup
@@ -45,10 +47,12 @@ const Login = () => {
     } else {
       // Handle login logic
       try {
-        const response = await axios.post('http://localhost:5000/login', { email, password });
-        const { token } = response.data;
+        const response = await axios.post('/users/login', { email, password });
+        const { token, user } = response.data; // Assuming user data is included
         console.log('Logging in with token:', token);
         localStorage.setItem('jwtToken', token); // Store the JWT in local storage
+
+        setUser(user); // Update the user in context
 
         // Redirect to MyProfile
         navigate('/my-profile');
@@ -127,7 +131,7 @@ const Login = () => {
             {isSigningUp ? "Already have an account?" : "Don't have an account?"} 
             <button 
               onClick={() => setIsSigningUp(!isSigningUp)} 
-              className="font-semibold text-blue-500 hover:underline"
+              className="font-semibold text-blue-500 hover:underline ml-1"
             >
               {isSigningUp ? 'Login' : 'Sign up'}
             </button>
