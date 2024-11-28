@@ -92,7 +92,7 @@ const Doctors = () => {
                                     <p className="text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">
                                         {item.name}
                                     </p>
-                                    <p className="text-xs">{item.speciality}</p>
+                                    <p className="text-[10px]">{item.speciality}</p>
                                 </div>
                             </div>
                         ))

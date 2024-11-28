@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/UserContext'; // Import UserContext
 import { assets } from '../assets/assets'; 
 import axios from '../utils/axiosInstance';
+import Cookies from 'js-cookie';
 
 const Login = () => {
   const bannerImages = [
@@ -35,7 +36,7 @@ const Login = () => {
     if (isSigningUp) {
       // Handle sign-up logic
       try {
-        const response = await axios.post('/users/register', { email, name, password });
+        const response = await axios.post('/api/user/register', { email, name, password });
         console.log('User created:', response.data);
         setIsSigningUp(false); // Switch to login mode after signup
         resetFormFields(); // Reset form fields after signup
@@ -47,10 +48,10 @@ const Login = () => {
     } else {
       // Handle login logic
       try {
-        const response = await axios.post('/users/login', { email, password });
+        const response = await axios.post('/api/user/login', { email, password });
         const { token, user } = response.data; // Assuming user data is included
         console.log('Logging in with token:', token);
-        localStorage.setItem('jwtToken', token); // Store the JWT in local storage
+        Cookies.set('jwtToken', token, { expires: 1 }); // Expires in 1 day
 
         setUser(user); // Update the user in context
 

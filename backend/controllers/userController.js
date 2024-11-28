@@ -1,7 +1,9 @@
-// controllers/userController.js
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js'; // Assuming you have a User model defined
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Register a new user
 export const registerUser = async (req, res) => {
@@ -32,10 +34,17 @@ export const registerUser = async (req, res) => {
     // Generate a token
     const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
+    // Set the token in an HTTP-only cookie
+    res.cookie('jwtToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
     res.status(201).json({
       success: true,
       message: 'User registered successfully.',
-      token,
       user: { id: newUser.id, name: newUser.name, email: newUser.email },
     });
   } catch (error) {
@@ -75,10 +84,17 @@ export const loginUser = async (req, res) => {
     // Generate a token
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
+    // Set the token in an HTTP-only cookie
+    res.cookie('jwtToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
     res.status(200).json({
       success: true,
       message: 'Logged in successfully.',
-      token,
       user: { id: user.id, name: user.name, email: user.email },
     });
   } catch (error) {
@@ -125,4 +141,10 @@ export const updateUserProfile = async (req, res) => {
     console.error('Update profile error:', error);
     res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
+};
+
+// Logout user
+export const logoutUser = (req, res) => {
+  res.clearCookie('jwtToken');
+  res.status(200).json({ success: true, message: 'Logged out successfully.' });
 };

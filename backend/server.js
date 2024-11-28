@@ -1,3 +1,4 @@
+// server.js
 import express from "express";
 import cors from 'cors';
 import 'dotenv/config';
@@ -9,7 +10,7 @@ import adminRouter from "./routes/adminRoute.js";
 import appointmentRouter from './routes/appointmentRoute.js';
 import paymentRouter from './routes/paymentRoute.js';
 import dotenv from 'dotenv';
-
+import cookieParser from 'cookie-parser'; // Import cookie-parser
 
 // App configuration
 const app = express();
@@ -23,7 +24,15 @@ connectCloudinary();
 
 // Middlewares
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser()); // Use cookie-parser
+
+// Configure CORS to allow credentials and specify origin
+app.use(
+  cors({
+    origin: 'http://localhost:7002', 
+    credentials: true, // Allow cookies to be sent
+  })
+);
 
 // API endpoints
 app.use("/api/user", userRouter);
@@ -35,7 +44,6 @@ app.use('/api/payments', paymentRouter);
 app.get("/", (req, res) => {
   res.send("API Working");
 });
-
 
 // Start the server
 if (process.env.NODE_ENV !== "test") {

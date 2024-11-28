@@ -1,6 +1,7 @@
 // src/contexts/UserContext.js
 import React, { createContext, useState, useEffect } from 'react';
 import axios from '../utils/axiosInstance';
+import Cookies from 'js-cookie';
 
 export const UserContext = createContext();
 
@@ -9,16 +10,16 @@ export const UserProvider = ({ children }) => {
 
   // Fetch user data if token exists
   useEffect(() => {
-    const token = localStorage.getItem('jwtToken');
+    const token = Cookies.get('jwtToken');
     if (token) {
       axios
-        .get('/users/profile')
+        .get('/api/users/profile')
         .then((response) => {
           setUser(response.data.user);
         })
         .catch((error) => {
           console.error('Failed to fetch user:', error);
-          localStorage.removeItem('jwtToken');
+          Cookies.remove('jwtToken');
         });
     }
   }, []);
