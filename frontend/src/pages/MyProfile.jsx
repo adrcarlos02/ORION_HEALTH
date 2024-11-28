@@ -1,6 +1,6 @@
 // src/pages/MyProfile.js
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom/dist';
 import { getUserProfile } from '../assets/assets2'; // Adjust the import path if necessary
 
 const MyProfile = () => {
