@@ -1,7 +1,7 @@
 // src/pages/Login.jsx
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../context/UserContext'; // Import UserContext
+import { UserContext } from '../context/UserContext';
 import { assets } from '../assets/assets'; 
 import axios from '../utils/axiosInstance';
 import Cookies from 'js-cookie';
@@ -15,66 +15,42 @@ const Login = () => {
     assets.BannerNeurology,
     assets.BannerSkinHealth,
   ];
-  
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isSigningUp, setIsSigningUp] = useState(false);
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const { setUser } = useContext(UserContext); // Use setUser from UserContext
+  const { setUser } = useContext(UserContext);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
     }, 5000);
     return () => clearInterval(interval);
   }, [bannerImages.length]);
 
-  const onSubmitHandler = async (event) => {
-    event.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-    if (isSigningUp) {
-      // Handle sign-up logic
-      try {
-        const response = await axios.post('/api/user/register', { email, name, password });
-        console.log('User created:', response.data);
-        setIsSigningUp(false); // Switch to login mode after signup
-        resetFormFields(); // Reset form fields after signup
-        toast.success('Account created successfully. Please log in.');
-      } catch (error) {
-        console.error('Error during sign-up:', error.response?.data || error.message);
-        toast.error(error.response?.data?.message || 'Sign-up failed. Please try again.');
-      }
-    } else {
-      // Handle login logic
-      try {
-        const response = await axios.post('/api/user/login', { email, password });
-        console.log('Login response:', response.data);
-        // The token is already set in an HTTP-only cookie by the backend
+    try {
+      const response = await axios.post('/api/user/login', { email, password });
 
-        // Now fetch the complete user profile
+      const { success, message, user } = response.data;
+      if (success) {
         const profileResponse = await axios.get('/api/user/profile');
         if (profileResponse.data.success) {
-          setUser(profileResponse.data.user); // Set the full user object
-          toast.success(profileResponse.data.message || 'Logged in successfully.');
-          // Redirect to MyProfile
+          setUser(profileResponse.data.user);
+          toast.success(message || 'Logged in successfully.');
           navigate('/my-profile');
-          resetFormFields(); // Reset fields after successful login
         } else {
-          toast.error(profileResponse.data.message || 'Failed to fetch profile data.');
+          toast.error(profileResponse.data.message || 'Profile loading failed.');
         }
-      } catch (error) {
-        console.error('Error during login:', error.response?.data || error.message);
-        toast.error(error.response?.data?.message || 'Invalid email or password. Please try again.');
+      } else {
+        toast.error(message || 'Login failed.');
       }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Invalid email or password.');
     }
-  };
-
-  const resetFormFields = () => {
-    setEmail('');
-    setPassword('');
-    setName('');
   };
 
   return (
@@ -83,28 +59,13 @@ const Login = () => {
       style={{ backgroundImage: `url(${bannerImages[currentImageIndex]})` }}
     >
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md backdrop-blur-sm">
-        <h2 className="text-2xl font-bold text-center text-gray-800">
-          {isSigningUp ? 'Sign Up' : 'Login'} to Your Account
-        </h2>
-        
-        <form className="space-y-4" onSubmit={onSubmitHandler}>
-          {isSigningUp && (
-            <div>
-              <label className="block text-sm font-medium text-gray-600">Name</label>
-              <input 
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your Name"
-                className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
-          )}
+        <h2 className="text-2xl font-bold text-center text-gray-800">Login to Your Account</h2>
+
+        <form className="space-y-4" onSubmit={handleLogin}>
           <div>
             <label className="block text-sm font-medium text-gray-600">Email</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
@@ -115,8 +76,8 @@ const Login = () => {
           
           <div>
             <label className="block text-sm font-medium text-gray-600">Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -125,22 +86,22 @@ const Login = () => {
             />
           </div>
           
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="w-full px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            {isSigningUp ? 'Create Account' : 'Log In'}
+            Login
           </button>
         </form>
-        
+
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            {isSigningUp ? "Already have an account?" : "Don't have an account?"} 
-            <button 
-              onClick={() => setIsSigningUp(!isSigningUp)} 
+            Don't have an account? 
+            <button
+              onClick={() => navigate('/signup')}
               className="font-semibold text-blue-500 hover:underline ml-1"
             >
-              {isSigningUp ? 'Login' : 'Sign up'}
+              Sign Up
             </button>
           </p>
         </div>

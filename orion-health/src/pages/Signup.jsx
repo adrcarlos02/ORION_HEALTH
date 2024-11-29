@@ -1,14 +1,12 @@
-// src/pages/Signup.jsx
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../context/UserContext'; // Import UserContext
-import axios from '../utils/axiosInstance'; // Use Axios instance with interceptors
+import { UserContext } from '../context/UserContext'; 
+import axios from '../utils/axiosInstance'; 
 import Cookies from 'js-cookie';
-import { toast, ToastContainer } from 'react-toastify'; // Import react-toastify
-import 'react-toastify/dist/ReactToastify.css'; // Import react-toastify CSS
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Signup = () => {
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,16 +20,13 @@ const Signup = () => {
     },
   });
 
-  const [loading, setLoading] = useState(false); // Loading state
-
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { setUser } = useContext(UserContext); // Use setUser from UserContext
+  const { setUser } = useContext(UserContext);
 
-  // Handler for input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Handle nested address fields
     if (name === 'line1' || name === 'line2') {
       setFormData((prev) => ({
         ...prev,
@@ -42,91 +37,32 @@ const Signup = () => {
     }
   };
 
-  // Handler for form submission
   const onSubmitHandler = async (event) => {
     event.preventDefault();
 
-    // Frontend validation
-    if (!formData.name.trim()) {
-      toast.error('Name is required.');
-      return;
-    }
-
-    if (!formData.email.trim()) {
-      toast.error('Email is required.');
-      return;
-    }
-
-    // Simple email regex for validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      toast.error('Please enter a valid email address.');
-      return;
-    }
-
-    if (!formData.password) {
-      toast.error('Password is required.');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long.');
-      return;
-    }
-
-    if (!formData.phone.trim()) {
-      toast.error('Phone number is required.');
-      return;
-    }
-
-    // Optional: Add phone number regex validation
-    // const phoneRegex = /^[0-9]{10}$/;
-    // if (!phoneRegex.test(formData.phone)) {
-    //   toast.error('Please enter a valid 10-digit phone number.');
-    //   return;
-    // }
-
-    if (formData.gender === 'Not Selected') {
-      toast.error('Please select your gender.');
-      return;
-    }
-
-    if (!formData.address.line1.trim()) {
-      toast.error('Address Line 1 is required.');
-      return;
-    }
-
-    // Optional: Add more validation as needed
+    // Validation checks
+    if (!formData.name.trim()) return toast.error('Name is required.');
+    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      return toast.error('Valid email is required.');
+    if (formData.password.length < 6) return toast.error('Password must be at least 6 characters.');
+    if (!formData.phone.trim()) return toast.error('Phone number is required.');
+    if (formData.gender === 'Not Selected') return toast.error('Please select your gender.');
+    if (!formData.address.line1.trim()) return toast.error('Address Line 1 is required.');
 
     try {
-      setLoading(true); // Start loading
+      setLoading(true);
 
-      // Send POST request to backend to register user
       const response = await axios.post('/api/user/register', {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        phone: formData.phone,
-        gender: formData.gender,
+        ...formData,
         dob: formData.dob || null, // Send null if dob is not provided
-        address: formData.address,
       });
 
-      // Assuming the backend sets the JWT token in an HTTP-only cookie
-      // and returns the complete user object
-
       const { user } = response.data;
-      console.log('User registered:', user);
-
-      // Update user state in context
+      toast.success('Account created successfully! Redirecting...');
       setUser(user);
-
-      // Optionally, you can fetch the profile again if needed
-      // Navigate to the user's profile
-      toast.success('Account created successfully. Redirecting to your profile...');
       navigate('/my-profile');
 
-      // Reset form fields after successful signup
+      // Reset the form
       setFormData({
         name: '',
         email: '',
@@ -140,115 +76,100 @@ const Signup = () => {
         },
       });
     } catch (error) {
-      console.error('Error during sign-up:', error.response?.data || error.message);
-
-      // Handle different error scenarios
-      if (error.response) {
-        // Server responded with a status other than 2xx
-        toast.error(error.response.data.message || 'Sign-up failed. Please try again.');
-      } else if (error.request) {
-        // Request was made but no response received
-        toast.error('No response from server. Please try again later.');
-      } else {
-        // Something else happened
-        toast.error('An error occurred. Please try again.');
-      }
+      toast.error(
+        error.response?.data?.message || 'An error occurred. Please try again.'
+      );
     } finally {
-      setLoading(false); // End loading
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-indigo-600" // Enhanced background
-    >
-      <ToastContainer /> {/* Container for react-toastify notifications */}
-      <div className="w-full max-w-lg p-8 space-y-6 bg-white bg-opacity-90 rounded-lg shadow-md backdrop-blur-sm">
-        <h2 className="text-2xl font-bold text-center text-gray-800">Sign Up to Your Account</h2>
-
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-cyan-500 to-blue-600 p-4">
+      <ToastContainer />
+      <div className="w-full max-w-lg p-8 bg-white bg-opacity-90 rounded-xl shadow-lg">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Sign Up</h2>
         <form className="space-y-4" onSubmit={onSubmitHandler}>
           {/* Name Field */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-600">
-              Name<span className="text-red-500">*</span>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-600 mb-1">
+              Name <span className="text-red-500">*</span>
             </label>
             <input
               id="name"
-              type="text"
               name="name"
+              type="text"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Your Name"
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter your full name"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none"
               required
             />
           </div>
 
           {/* Email Field */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-600">
-              Email<span className="text-red-500">*</span>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-600 mb-1">
+              Email <span className="text-red-500">*</span>
             </label>
             <input
               id="email"
-              type="email"
               name="email"
+              type="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="you@example.com"
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none"
               required
             />
           </div>
 
           {/* Password Field */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-600">
-              Password<span className="text-red-500">*</span>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-600 mb-1">
+              Password <span className="text-red-500">*</span>
             </label>
             <input
               id="password"
-              type="password"
               name="password"
+              type="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="••••••••"
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Create a password"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none"
               required
             />
-            <p className="text-xs text-gray-500 mt-1">Password must be at least 6 characters.</p>
+            <p className="text-xs text-gray-500 mt-1">At least 6 characters.</p>
           </div>
 
           {/* Phone Number Field */}
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-600">
-              Phone Number<span className="text-red-500">*</span>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-600 mb-1">
+              Phone Number <span className="text-red-500">*</span>
             </label>
             <input
               id="phone"
-              type="text"
               name="phone"
+              type="text"
               value={formData.phone}
               onChange={handleChange}
-              placeholder="123-456-7890"
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Enter your phone number"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none"
               required
             />
-            {/* Optional: Add phone number format validation message */}
-            {/* <p className="text-xs text-gray-500 mt-1">Enter a valid 10-digit phone number.</p> */}
           </div>
 
-          {/* Gender Field */}
+          {/* Gender Dropdown */}
           <div>
-            <label htmlFor="gender" className="block text-sm font-medium text-gray-600">
-              Gender<span className="text-red-500">*</span>
+            <label htmlFor="gender" className="block text-sm font-medium text-gray-600 mb-1">
+              Gender <span className="text-red-500">*</span>
             </label>
             <select
               id="gender"
               name="gender"
               value={formData.gender}
               onChange={handleChange}
-              className="w-full px-4 py-2 mt-1 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none"
               required
             >
               <option value="Not Selected" disabled>
@@ -258,80 +179,76 @@ const Signup = () => {
               <option value="Female">Female</option>
               <option value="Non-Binary">Non-Binary</option>
               <option value="Prefer Not to Say">Prefer Not to Say</option>
-              {/* Add more options as needed */}
             </select>
           </div>
 
           {/* Date of Birth Field */}
           <div>
-            <label htmlFor="dob" className="block text-sm font-medium text-gray-600">
-              Date of Birth<span className="text-gray-500"> (Optional)</span>
+            <label htmlFor="dob" className="block text-sm font-medium text-gray-600 mb-1">
+              Date of Birth <span className="text-gray-500">(Optional)</span>
             </label>
             <input
               id="dob"
-              type="date"
               name="dob"
+              type="date"
               value={formData.dob}
               onChange={handleChange}
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              max={new Date().toISOString().split('T')[0]} // Prevent future dates
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none"
             />
           </div>
 
-          {/* Address Line 1 */}
+          {/* Address Fields */}
           <div>
-            <label htmlFor="line1" className="block text-sm font-medium text-gray-600">
-              Address Line 1<span className="text-red-500">*</span>
+            <label htmlFor="line1" className="block text-sm font-medium text-gray-600 mb-1">
+              Address Line 1 <span className="text-red-500">*</span>
             </label>
             <input
               id="line1"
-              type="text"
               name="line1"
+              type="text"
               value={formData.address.line1}
               onChange={handleChange}
               placeholder="Street address, P.O. box, etc."
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none"
               required
             />
           </div>
 
-          {/* Address Line 2 */}
           <div>
-            <label htmlFor="line2" className="block text-sm font-medium text-gray-600">
-              Address Line 2<span className="text-gray-500"> (Optional)</span>
+            <label htmlFor="line2" className="block text-sm font-medium text-gray-600 mb-1">
+              Address Line 2 <span className="text-gray-500">(Optional)</span>
             </label>
             <input
               id="line2"
-              type="text"
               name="line2"
+              type="text"
               value={formData.address.line2}
               onChange={handleChange}
-              placeholder="Apartment, suite, unit, building, floor, etc."
-              className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="Apartment, suite, unit, etc."
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-400 focus:outline-none"
             />
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            className={`w-full px-4 py-2 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+            className={`w-full px-4 py-2 font-semibold text-white bg-cyan-500 rounded-lg hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
               loading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
-            disabled={loading} // Disable button when loading
+            disabled={loading}
           >
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
-        {/* Link to Login */}
-        <div className="text-center">
+        <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
-            Already have an account?
+            Already have an account?{' '}
             <button
               onClick={() => navigate('/login')}
-              className="font-semibold text-indigo-600 hover:underline ml-1"
+              className="text-cyan-500 hover:underline font-semibold"
             >
-              Login
+              Log in
             </button>
           </p>
         </div>
