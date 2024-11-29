@@ -1,17 +1,24 @@
-import { StrictMode } from 'react';
+// src/main.jsx
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 import './index.css'; // Your global styles
 import { BrowserRouter } from 'react-router-dom'; // For routing
-import AppContextProvider from './context/AppContext.jsx'; // Your context provider
+import AppContextProvider from './context/AppContext.jsx'; // Your AppContext provider
+import { UserProvider } from './context/UserContext.jsx'; // Your UserContext provider
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import styles for react-toastify
 
 // Create a root element and render the application
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  <React.StrictMode>
     <BrowserRouter>
-      <AppContextProvider>
-        <App />
-      </AppContextProvider>
+      <UserProvider>
+        <AppContextProvider>
+          <App />
+          <ToastContainer /> {/* To display toast notifications globally */}
+        </AppContextProvider>
+      </UserProvider>
     </BrowserRouter>
-  </StrictMode>
+  </React.StrictMode>
 );

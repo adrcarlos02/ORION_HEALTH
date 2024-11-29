@@ -5,6 +5,7 @@ import { UserContext } from '../context/UserContext'; // Import UserContext
 import { assets } from '../assets/assets'; 
 import axios from '../utils/axiosInstance';
 import Cookies from 'js-cookie';
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const bannerImages = [
@@ -40,27 +41,32 @@ const Login = () => {
         console.log('User created:', response.data);
         setIsSigningUp(false); // Switch to login mode after signup
         resetFormFields(); // Reset form fields after signup
-        alert('Account created successfully. Please log in.');
+        toast.success('Account created successfully. Please log in.');
       } catch (error) {
         console.error('Error during sign-up:', error.response?.data || error.message);
-        alert(error.response?.data?.message || 'Sign-up failed. Please try again.');
+        toast.error(error.response?.data?.message || 'Sign-up failed. Please try again.');
       }
     } else {
       // Handle login logic
       try {
         const response = await axios.post('/api/user/login', { email, password });
-        const { token, user } = response.data; // Assuming user data is included
-        console.log('Logging in with token:', token);
-        Cookies.set('jwtToken', token, { expires: 1 }); // Expires in 1 day
+        console.log('Login response:', response.data);
+        // The token is already set in an HTTP-only cookie by the backend
 
-        setUser(user); // Update the user in context
-
-        // Redirect to MyProfile
-        navigate('/my-profile');
-        resetFormFields(); // Reset fields after successful login
+        // Now fetch the complete user profile
+        const profileResponse = await axios.get('/api/user/profile');
+        if (profileResponse.data.success) {
+          setUser(profileResponse.data.user); // Set the full user object
+          toast.success(profileResponse.data.message || 'Logged in successfully.');
+          // Redirect to MyProfile
+          navigate('/my-profile');
+          resetFormFields(); // Reset fields after successful login
+        } else {
+          toast.error(profileResponse.data.message || 'Failed to fetch profile data.');
+        }
       } catch (error) {
         console.error('Error during login:', error.response?.data || error.message);
-        alert(error.response?.data?.message || 'Invalid email or password. Please try again.');
+        toast.error(error.response?.data?.message || 'Invalid email or password. Please try again.');
       }
     }
   };
