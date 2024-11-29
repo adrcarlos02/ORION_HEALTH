@@ -8,7 +8,6 @@ const Appointment = sequelize.define('Appointment', {
   slotTime: { type: DataTypes.STRING, allowNull: false },
   amount: { type: DataTypes.FLOAT, allowNull: false },
   cancelled: { type: DataTypes.BOOLEAN, defaultValue: false },
-  payment: { type: DataTypes.BOOLEAN, defaultValue: false },
   isCompleted: { type: DataTypes.BOOLEAN, defaultValue: false },
 });
 

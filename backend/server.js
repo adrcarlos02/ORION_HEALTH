@@ -8,7 +8,6 @@ import userRouter from "./routes/userRoute.js"; // Ensure this matches your actu
 import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
 import appointmentRouter from './routes/appointmentRoute.js';
-import paymentRouter from './routes/paymentRoute.js';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -42,7 +41,6 @@ app.use("/api/user", userRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/doctor", doctorRouter);
 app.use('/api/appointments', appointmentRouter);
-app.use('/api/payments', paymentRouter);
 
 // Root route
 app.get("/", (req, res) => {
