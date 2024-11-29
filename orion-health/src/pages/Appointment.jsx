@@ -1,77 +1,90 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
-import { assets } from "../assets/assets";
-import BookingSlots from "../components/BookingSlots";
+import { toast } from "react-toastify";
 
 const Appointment = () => {
   const { docId } = useParams();
   const { doctors, currency } = useContext(AppContext);
-  const daysOfWeek = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
+  const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const [docInfo, setDocInfo] = useState(null);
   const [docSlots, setDocSlots] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [slotTime, setSlotTime] = useState("");
 
-  // Fetch doctor information based on the ID from URL params
+  const navigate = useNavigate();
+
   const fetchDocInfo = () => {
     const doctor = doctors.find((doc) => doc._id === docId);
-    setDocInfo(doctor || null);
+    if (doctor) {
+      setDocInfo(doctor);
+    } else {
+      toast.error("Doctor not found.");
+    }
   };
 
-  // Generate available booking slots for the week
   const getAvailableSlots = () => {
-    const today = new Date();
     const newSlots = [];
+    const day = selectedDate.getDay();
 
-    for (let i = 0; i < 7; i++) {
-      const currentDate = new Date(today);
-      currentDate.setDate(today.getDate() + i);
-      const dayOfWeek = currentDate.getDay();
+    // Check for Sunday (clinic closed)
+    if (day === 0) {
+      setDocSlots([]);
+      toast.warning("The clinic is closed on Sundays.");
+      return;
+    }
 
-      // Skip Sunday (0)
-      if (dayOfWeek === 0) {
-        newSlots.push([]);
-        continue;
+    // Define clinic hours based on the day
+    const startHour = 8;
+    const endHour = day === 6 ? 12 : 16; // Saturday: 8 AM - 12 PM, Weekdays: 8 AM - 4 PM
+
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const slotTime = new Date(selectedDate);
+        slotTime.setHours(hour, minute);
+
+        const formattedTime = slotTime.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        newSlots.push({
+          datetime: slotTime,
+          time: formattedTime,
+        });
       }
-
-      const startHour = 9; // Start time: 9 AM
-      const endHour = dayOfWeek === 6 ? 12 : 15; // End time: 12 PM for Saturday, 3 PM otherwise
-
-      const timeSlots = [];
-      for (let hour = startHour; hour < endHour; hour++) {
-        for (let minute = 0; minute < 60; minute += 30) {
-          if (hour === 12) continue; // Skip 12 PM
-
-          const slotTime = new Date(currentDate);
-          slotTime.setHours(hour, minute);
-
-          timeSlots.push({
-            datetime: slotTime,
-            time: slotTime.toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-          });
-        }
-      }
-
-      newSlots.push(timeSlots);
     }
 
     setDocSlots(newSlots);
   };
 
   useEffect(() => {
-    fetchDocInfo(); // Fetch doctor information when component mounts
+    fetchDocInfo();
   }, [doctors, docId]);
 
   useEffect(() => {
     if (docInfo) {
-      getAvailableSlots(); // Get available slots once doctor info is loaded
+      getAvailableSlots();
     }
-  }, [docInfo]);
+  }, [docInfo, selectedDate]);
 
-  // Loading state while fetching doctor information
+  const handleDateChange = (e) => {
+    const selected = new Date(e.target.value);
+    setSelectedDate(selected);
+  };
+
+  const bookAppointment = () => {
+    if (!slotTime) {
+      toast.warning("Please select a time slot.");
+      return;
+    }
+
+    toast.success(
+      `Appointment booked with ${docInfo.name} on ${selectedDate.toDateString()} at ${slotTime}!`
+    );
+  };
+
   if (!docInfo) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -81,49 +94,95 @@ const Appointment = () => {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow-md sm:max-w-xl sm:mx-auto">
-      {/* Doctor Info and Image Row */}
-      <div className="flex flex-col sm:flex-row items-stretch gap-4">
-        {/* Doctor Image */}
-        <div className="w-full sm:w-1/3 h-auto">
-          <img
-            className="w-full h-full rounded-lg object-cover"
-            src={docInfo.image}
-            alt={`${docInfo.name}'s profile`}
-          />
-        </div>
-
-        {/* Doctor Info */}
-        <div className="flex-1 border border-gray-400 rounded-lg p-4 sm:p-6 bg-white flex flex-col justify-between">
-          <div>
-            <p className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
-              {docInfo.name}
-              <img className="w-5" src={assets.verified_icon} alt="Verified icon" />
-            </p>
-            <div className="flex items-center gap-2 text-sm mt-1 text-gray-600">
-              <p>{docInfo.degree} - {docInfo.speciality}</p>
-              <button className="py-0.5 px-2 border text-xs rounded-full">{docInfo.experience}</button>
-            </div>
-            <div className="mt-4">
-              <p className="flex items-center gap-1 text-sm font-medium text-gray-900">
-                About <img src={assets.info_icon} alt="info icon" />
-              </p>
-              <p className="text-sm text-gray-500 max-w-[700px] mt-1">{docInfo.about}</p>
-            </div>
+    <div className="container mx-auto p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Doctor Info Section */}
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <div className="w-full">
+            <img
+              src={docInfo.image}
+              alt={`${docInfo.name}'s profile`}
+              className="rounded-lg shadow-md w-full h-auto object-cover"
+            />
           </div>
-          <p className="text-gray-500 font-medium mt-4">
-            Appointment fee: <span className="text-gray-600">{docInfo.fees} {currency}</span>
-          </p>
+          <div className="mt-6 space-y-4">
+            <h2 className="text-3xl font-semibold text-gray-800">{docInfo.name}</h2>
+            <p className="text-lg text-gray-600">
+              {docInfo.degree} - {docInfo.speciality}
+            </p>
+            <p className="text-sm text-gray-500 mt-4">{docInfo.about}</p>
+            <p className="text-lg font-medium text-gray-700">
+              Appointment fee: {docInfo.fees} {currency}
+            </p>
+          </div>
+        </div>
+
+        {/* Booking Section */}
+        <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col">
+          <h3 className="text-2xl font-semibold text-gray-800 mb-4">Book Your Appointment</h3>
+
+          {/* Date Picker */}
+          <div>
+            <label htmlFor="appointment-date" className="block text-lg font-medium text-gray-600">
+              Choose a Date:
+            </label>
+            <input
+              type="date"
+              id="appointment-date"
+              className="mt-2 p-4 border rounded-lg w-full text-lg"
+              value={selectedDate.toISOString().split("T")[0]}
+              onChange={handleDateChange}
+              min={new Date().toISOString().split("T")[0]}
+            />
+          </div>
+
+          {/* Available Slots */}
+          <div className="mt-6">
+            <h4 className="text-xl font-semibold text-gray-700 mb-2">
+              Available Slots for {daysOfWeek[selectedDate.getDay()]}:
+            </h4>
+            {docSlots.length > 0 ? (
+              <div className="flex gap-4 flex-wrap">
+                {docSlots.map((slot, index) => (
+                  <div
+                    key={index}
+                    onClick={() => setSlotTime(slot.time)}
+                    className={`py-2 px-6 rounded-full cursor-pointer ${
+                      slot.time === slotTime
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 border border-gray-300"
+                    }`}
+                  >
+                    {slot.time}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500">No slots available for this date.</p>
+            )}
+          </div>
+
+          {/* Booking Button */}
+          <div className="mt-6">
+            <button
+              onClick={bookAppointment}
+              className="w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              Book Appointment
+            </button>
+          </div>
+
+          {/* Button to Navigate to Doctors Page */}
+          <div className="mt-4">
+            <button
+              onClick={() => navigate("/doctors")}
+              className="w-full px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+            >
+              View All Doctors
+            </button>
+          </div>
         </div>
       </div>
-
-      {/* Booking Slots Row */}
-      <div className="mt-4">
-        <BookingSlots docSlots={docSlots} daysOfWeek={daysOfWeek} />
-      </div>
-    
-    <button className="bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6"> Book an appointment </button>
-
     </div>
   );
 };

@@ -43,7 +43,7 @@ const Footer = () => {
 
         {/* ---- Right Section ---- */}
         <div className="flex-[2] text-left flex flex-col">
-          <p className="font-semibold">GET IN TOUCH</p>
+          <p className="font-semibold">Contact Us</p>
           <ul className="list-none p-0 mt-2">
             <li className="hover:scale-105 transition-all duration-200 cursor-pointer">Phone: (123) 456-7890</li>
             <li className="hover:scale-105 transition-all duration-200 cursor-pointer">Email: info@orionhealth.com</li>

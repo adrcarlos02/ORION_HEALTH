@@ -11,7 +11,7 @@ const User = sequelize.define('User', {
   dob: { type: DataTypes.DATEONLY, allowNull: true },
   address: { type: DataTypes.JSON, allowNull: true },
   image: { type: DataTypes.STRING, allowNull: true },
-  // ... other fields
+  
 }, {
   tableName: 'users', // Adjust if different
   timestamps: true, // or false

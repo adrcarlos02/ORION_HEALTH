@@ -1,11 +1,10 @@
-// src/pages/Login.jsx
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../context/UserContext';
-import { assets } from '../assets/assets'; 
+import { assets } from '../assets/assets';
 import axios from '../utils/axiosInstance';
-import Cookies from 'js-cookie';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
   const bannerImages = [
@@ -49,7 +48,7 @@ const Login = () => {
         toast.error(message || 'Login failed.');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Invalid email or password.');
+      toast.error(error.response?.data?.message || 'Invalid email or password. Please try again.');
     }
   };
 
@@ -58,6 +57,7 @@ const Login = () => {
       className="flex items-center justify-center min-h-screen bg-cover bg-center"
       style={{ backgroundImage: `url(${bannerImages[currentImageIndex]})` }}
     >
+      <ToastContainer /> {/* Toastify Container for notifications */}
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md backdrop-blur-sm">
         <h2 className="text-2xl font-bold text-center text-gray-800">Login to Your Account</h2>
 
