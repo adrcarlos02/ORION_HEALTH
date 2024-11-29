@@ -91,7 +91,7 @@ export const specialityData = [
 
 export const doctors = [
     {
-        _id: 'doc1',
+        _id: 1,
         name: 'Dr. Meredith Grey',
         image: doc1,
         speciality: 'General physician',
@@ -105,7 +105,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc2',
+        _id: 2,
         name: 'Dr. Miranda Bailey',
         image: doc2,
         speciality: 'Gynecologist',
@@ -119,7 +119,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc3',
+        _id: 3,
         name: 'Dr. Mark Sloan',
         image: doc3,
         speciality: 'Dermatologist',
@@ -133,7 +133,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc4',
+        _id: 4,
         name: 'Dr. Arizona Robbins',
         image: doc4,
         speciality: 'Pediatrician',
@@ -147,7 +147,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc5',
+        _id: 5,
         name: 'Dr. Derek Shepherd',
         image: doc5,
         speciality: 'Neurologist',
@@ -161,7 +161,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc6',
+        _id: 6,
         name: 'Dr. Amelia Shepherd',
         image: doc6,
         speciality: 'Neurologist',
@@ -175,7 +175,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc7',
+        _id: 7,
         name: 'Dr. Richard Webber',
         image: doc7,
         speciality: 'General physician',
@@ -189,7 +189,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc8',
+        _id: 8,
         name: 'Dr. Addison Montgomery',
         image: doc8,
         speciality: 'Gynecologist',
@@ -203,7 +203,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc9',
+        _id: 9,
         name: 'Dr. Jackson Avery',
         image: doc9,
         speciality: 'Dermatologist',
@@ -217,7 +217,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc10',
+        _id: 10,
         name: 'Dr. Alex Karev',
         image: doc10,
         speciality: 'Pediatrician',
@@ -231,7 +231,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc11',
+        _id: 11,
         name: 'Dr. Maggie Pierce',
         image: doc11,
         speciality: 'Neurologist',
@@ -245,7 +245,7 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc12',
+        _id: 12,
         name: 'Dr. Owen Hunt',
         image: doc12,
         speciality: 'Neurologist',
@@ -259,13 +259,13 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc13',
-        name: 'Dr. Jo Wilson',
+        _id: 13,
+        name: 'Dr. April Kepner',
         image: doc13,
         speciality: 'General physician',
         degree: 'MD',
         experience: '4 Years',
-        about: 'Dr. Wilson is a skilled general physician known for her patient-centered approach and ability to connect with individuals from all walks of life.',
+        about: 'Dr. Kepner is a skilled general physician known for her patient-centered approach and ability to connect with individuals from all walks of life.',
         fees: 100,
         address: {
             line1: '17th Cross, Richmond',
@@ -273,13 +273,13 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc14',
-        name: 'Dr. Callie Torres',
+        _id: 14,
+        name: 'Dr. Jo Wilson',
         image: doc14,
         speciality: 'Gynecologist',
         degree: 'MD',
         experience: '3 Years',
-        about: 'Dr. Torres is a talented gynecologist known for her innovative techniques and her dedication to women’s health.',
+        about: 'Dr. Wilson is a talented gynecologist known for her innovative techniques and her dedication to women’s health.',
         fees: 120,
         address: {
             line1: '27th Cross, Richmond',
@@ -287,13 +287,13 @@ export const doctors = [
         }
     },
     {
-        _id: 'doc15',
-        name: 'Dr. Ben Warren',
+        _id: 15,
+        name: 'Dr. Lexi Grey',
         image: doc15,
         speciality: 'Pediatrician',
         degree: 'MD',
         experience: '2 Years',
-        about: 'Dr. Warren is committed to providing compassionate care to children and is known for his work in pediatric emergency medicine.',
+        about: 'Dr. Grey is committed to providing compassionate care to children and is known for her work in pediatric emergency medicine.',
         fees: 80,
         address: {
             line1: '47th Cross, Richmond',

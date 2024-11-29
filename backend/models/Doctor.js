@@ -11,7 +11,9 @@ const Doctor = sequelize.define('Doctor', {
   about: { type: DataTypes.TEXT, allowNull: false },
   fees: { type: DataTypes.FLOAT, allowNull: false },
   available: { type: DataTypes.BOOLEAN, defaultValue: true },
-  address: { type: DataTypes.JSON, allowNull: false },
+  slots_booked: { type: DataTypes.JSON, defaultValue: {} },
+}, {
+  timestamps: true, // Automatically adds `createdAt` and `updatedAt`
 });
 
 export default Doctor;

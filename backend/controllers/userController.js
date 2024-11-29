@@ -2,7 +2,7 @@
 
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js'; // Assuming you have a User model defined
+import User from '../models/User.js'; 
 import dotenv from 'dotenv';
 import { uploadToCloudinary } from '../utils/cloudinary.js'; // Utility for Cloudinary uploads
 
@@ -139,6 +139,36 @@ export const getUserProfile = async (req, res) => {
     res.status(200).json({ success: true, user });
   } catch (error) {
     console.error('Get profile error:', error);
+    res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
+  }
+};
+
+/**
+ * Get all appointments by user 
+ */
+export const getAppointmentsByUser = async (req, res) => {
+  try {
+    const userId = req.userId; // Get userId from the middleware
+
+    // Check if userId exists
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'User ID is required.' });
+    }
+
+    // Fetch appointments for the user
+    const appointments = await appointment.findAll({
+      where: { userId },
+    });
+
+    // Check if appointments are found
+    if (!appointments || appointments.length === 0) {
+      return res.status(404).json({ success: false, message: 'No appointments found for the user.' });
+    }
+
+    // Respond with appointments
+    res.status(200).json({ success: true, appointments });
+  } catch (error) {
+    console.error('Get appointments error:', error);
     res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
 };

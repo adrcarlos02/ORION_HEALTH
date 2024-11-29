@@ -4,6 +4,7 @@ import {
   registerUser,
   loginUser,
   getUserProfile,
+  getAppointmentsByUser,
   updateUserProfile,
   logoutUser, // Ensure you import logoutUser if not already
 } from '../controllers/userController.js';
