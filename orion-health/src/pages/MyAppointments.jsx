@@ -11,7 +11,7 @@ const MyAppointments = () => {
 
   // Format date (e.g., "20_01_2000" => "20 Jan 2000")
   const formatDate = (slotDate) => {
-    const [day, month, year] = slotDate.split("_");
+    const [day, month, year] = slotDate.split("-");
     const months = [
       "Jan",
       "Feb",
