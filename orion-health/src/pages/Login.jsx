@@ -24,7 +24,7 @@ const Login = () => {
   React.useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
-    }, 5000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [bannerImages.length]);
 
