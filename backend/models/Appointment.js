@@ -12,15 +12,21 @@ const Appointment = sequelize.define('Appointment', {
   createdAt: {
     type: DataTypes.DATE,
     allowNull: false,
-    defaultValue: DataTypes.NOW, // Automatically sets the current timestamp
+    defaultValue: DataTypes.NOW,
   },
-  //userId
+}, {
+  indexes: [
+    {
+      unique: true,
+      fields: ['doctorId', 'slotDate', 'slotTime'], // Ensures a doctor can't be booked twice at the same time
+    },
+  ],
 });
 
 User.hasMany(Appointment, { foreignKey: 'userId' });
 Appointment.belongsTo(User, { foreignKey: 'userId' });
 
 Doctor.hasMany(Appointment, { foreignKey: 'doctorId' });
-Appointment.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor'});
+Appointment.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' });
 
 export default Appointment;

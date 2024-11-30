@@ -6,12 +6,20 @@ import { toast } from "react-toastify";
 const MyAppointments = () => {
   const { user } = useContext(UserContext);
   const [appointments, setAppointments] = useState([]);
+  const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [cancelling, setCancelling] = useState(null); // To handle multiple cancellations
+  const [cancelling, setCancelling] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState({
+    specialty: "",
+    date: "",
+    status: "",
+  });
+  const appointmentsPerPage = 5;
 
-  // Format date (e.g., "20_01_2000" => "20 Jan 2000")
+  // Format date (e.g., "2024-12-01" => "01 Dec 2024")
   const formatDate = (slotDate) => {
-    const [day, month, year] = slotDate.split("-");
+    const [year, month, day] = slotDate.split("-");
     const months = [
       "Jan",
       "Feb",
@@ -30,33 +38,12 @@ const MyAppointments = () => {
   };
 
   // Fetch user appointments
-  // const fetchAppointments = async () => {
-  //   try {
-  //     const { data } = await axios.get("/api/appointments/user"); // Fetch appointments
-  //     if (data.success) {
-  //       setAppointments(data.appointments.reverse());
-  //     } else {
-  //       toast.error(data.message || "Failed to fetch appointments.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching appointments:", error);
-  //     toast.error(
-  //       error.response?.data?.message || "Failed to fetch appointments."
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // Cancel an appointment
   const fetchAppointments = async () => {
     try {
-      console.log("Fetching appointments...");
-      const { data } = await axios.get(`/api/appointments/profile/${user.id}`); // Pass user ID in the URL
-      console.log("API Response:", data);
-  
+      const { data } = await axios.get(`/api/appointments/profile/${user.id}`);
       if (data.success) {
         setAppointments(data.appointments.reverse());
+        setFilteredAppointments(data.appointments.reverse());
       } else {
         toast.error(data.message || "Failed to fetch appointments.");
       }
@@ -67,107 +54,225 @@ const MyAppointments = () => {
       setLoading(false);
     }
   };
-  
-  useEffect(() => {
-    if (user) {
-      fetchAppointments();
-    }
-  }, [user]);
-  
-  
-  
+
+  // Cancel an appointment
   const handleCancel = async (appointmentId) => {
-    const confirmCancel = window.confirm(
-      "Are you sure you want to cancel this appointment?"
-    );
-    if (!confirmCancel) return;
+    if (!window.confirm("Are you sure you want to cancel this appointment?")) return;
 
     setCancelling(appointmentId);
     try {
-      const { data } = await axios.post("/api/cancel-appointment", {
-        appointmentId,
-      });
+      const { data } = await axios.post("/api/appointments/cancel", { appointmentId });
       if (data.success) {
-        toast.success("Appointment cancelled successfully.");
+        toast.success("Appointment canceled successfully.");
+
         setAppointments((prev) =>
-          prev.filter((appt) => appt._id !== appointmentId)
+          prev.map((appt) =>
+            appt.id === appointmentId ? { ...appt, cancelled: true } : appt
+          )
+        );
+        setFilteredAppointments((prev) =>
+          prev.map((appt) =>
+            appt.id === appointmentId ? { ...appt, cancelled: true } : appt
+          )
         );
       } else {
         toast.error(data.message || "Failed to cancel appointment.");
       }
     } catch (error) {
-      console.error("Error cancelling appointment:", error);
       toast.error(
-        error.response?.data?.message || "Failed to cancel appointment."
+        error.response?.data?.message || "An error occurred while canceling the appointment."
       );
     } finally {
       setCancelling(null);
     }
   };
 
+  // Handle Filter Change
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    const updatedFilters = { ...filters, [name]: value };
+    setFilters(updatedFilters);
+
+    // Apply filters
+    const filtered = appointments.filter((appt) => {
+      const specialtyMatch =
+        !updatedFilters.specialty || appt.doctor.speciality === updatedFilters.specialty;
+
+      const dateMatch = !updatedFilters.date || appt.slotDate === updatedFilters.date;
+
+      const statusMatch =
+        !updatedFilters.status ||
+        (updatedFilters.status === "Cancelled" && appt.cancelled) ||
+        (updatedFilters.status === "Scheduled" && !appt.cancelled);
+
+      return specialtyMatch && dateMatch && statusMatch;
+    });
+
+    setFilteredAppointments(filtered);
+    setCurrentPage(1);
+  };
+
+  // Reset Filters
+  const resetFilters = () => {
+    setFilters({ specialty: "", date: "", status: "" });
+    setFilteredAppointments(appointments);
+    setCurrentPage(1);
+  };
+
+  // Pagination Logic
+  const indexOfLastAppointment = currentPage * appointmentsPerPage;
+  const indexOfFirstAppointment = indexOfLastAppointment - appointmentsPerPage;
+  const currentAppointments = filteredAppointments.slice(
+    indexOfFirstAppointment,
+    indexOfLastAppointment
+  );
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   useEffect(() => {
     if (user) {
       fetchAppointments();
     }
   }, [user]);
 
-  if (loading) return <p>Loading appointments...</p>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-lg text-gray-500">Loading appointments...</p>
+      </div>
+    );
+  }
+
+  // Get unique specialties dynamically
+  const specialties = [
+    ...new Set(appointments.map((appt) => appt.doctor.speciality)),
+  ];
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">My Appointments</h2>
-      {appointments.length === 0 ? (
-        <p>No appointments booked.</p>
-      ) : (
-        appointments.map((appointment) => (
-          <div
-            key={appointment._id}
-            className="flex flex-col sm:flex-row justify-between items-center border p-4 mb-4 rounded"
-          >
-            {/* Doctor's Information */}
-            <div className="flex items-center">
-              {/* <img
-                src={appointment.docData.image}
-                alt={appointment.docData.name}
-                className="w-16 h-16 rounded-full object-cover mr-4"
-              /> */}
-              <div>
-                <h3 className="text-lg font-semibold">
-                  {appointment.doctor.name}
-                </h3>
-                <p className="text-gray-600">
-                  {appointment.doctor.speciality}
-                </p>
-              </div>
-            </div>
+    <div className="container mx-auto p-6">
+      <h2 className="text-3xl font-bold text-center mb-6">My Appointments</h2>
 
-            {/* Appointment Details */}
-            <div className="mt-4 sm:mt-0">
-              <p className="text-gray-800">
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label htmlFor="specialty" className="block text-sm font-medium text-gray-700">
+            Specialty
+          </label>
+          <select
+            id="specialty"
+            name="specialty"
+            value={filters.specialty}
+            onChange={handleFilterChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          >
+            <option value="">All</option>
+            {specialties.map((specialty, idx) => (
+              <option key={idx} value={specialty}>
+                {specialty}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+            Date
+          </label>
+          <input
+            type="date"
+            id="date"
+            name="date"
+            value={filters.date}
+            onChange={handleFilterChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            value={filters.status}
+            onChange={handleFilterChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+          >
+            <option value="">All</option>
+            <option value="Scheduled">Scheduled</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Reset Filters */}
+      <button
+        onClick={resetFilters}
+        className="mb-6 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+      >
+        Reset Filters
+      </button>
+
+      {/* Appointments */}
+      {currentAppointments.length === 0 ? (
+        <p className="text-center text-gray-500">No appointments found for the selected filters.</p>
+      ) : (
+        currentAppointments.map((appointment, index) => (
+          <div
+            key={appointment.id || `${appointment.slotDate}-${appointment.slotTime}-${index}`}
+            className="flex flex-col sm:flex-row justify-between items-center bg-white border p-4 mb-4 rounded-lg shadow-md"
+          >
+            <div>
+              <h3 className="text-lg font-semibold">{appointment.doctor.name}</h3>
+              <p className="text-sm text-gray-600">{appointment.doctor.speciality}</p>
+              <p className="text-gray-700">
                 <strong>Date:</strong> {formatDate(appointment.slotDate)}
               </p>
-              <p className="text-gray-800">
+              <p className="text-gray-700">
                 <strong>Time:</strong> {appointment.slotTime}
               </p>
-              <p className="text-gray-800">
+              <p className="text-gray-700">
                 <strong>Status:</strong>{" "}
-                {appointment.cancelled ? "Cancelled" : "Scheduled"}
+                {appointment.cancelled ? (
+                  <span className="text-red-500">Cancelled</span>
+                ) : (
+                  <span className="text-green-500">Scheduled</span>
+                )}
               </p>
             </div>
 
-            {/* Cancel Button */}
             {!appointment.cancelled && (
               <button
-                onClick={() => handleCancel(appointment._id)}
-                className="mt-4 sm:mt-0 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-                disabled={cancelling === appointment._id}
+                onClick={() => handleCancel(appointment.id)}
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                disabled={cancelling === appointment.id}
               >
-                {cancelling === appointment._id ? "Cancelling..." : "Cancel"}
+                {cancelling === appointment.id ? "Cancelling..." : "Cancel"}
               </button>
             )}
           </div>
         ))
       )}
+
+      {/* Pagination */}
+      <div className="mt-6 flex justify-center">
+        {Array.from({
+          length: Math.ceil(filteredAppointments.length / appointmentsPerPage),
+        }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => paginate(index + 1)}
+            className={`px-4 py-2 mx-1 rounded-lg ${
+              currentPage === index + 1
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

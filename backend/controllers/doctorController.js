@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import Doctor from '../models/Doctor.js';
+import Appointment from '../models/Appointment.js';
 
 // Helper function to send error responses
 const handleError = (res, error, message = 'An error occurred') => {
@@ -137,23 +138,127 @@ export const updateDoctorProfile = async (req, res) => {
   }
 };
 
+
 // Get Doctor Slots
+
 export const getDoctorSlots = async (req, res) => {
   const { doctorId } = req.params;
   const { date } = req.query; // Expecting a query parameter for date (e.g., YYYY-MM-DD)
 
   try {
-    // Find the doctor by ID
-    const doctor = await Doctor.findByPk(doctorId);
+    // Validate the input parameters
+    if (!doctorId || isNaN(doctorId)) {
+      return res.status(400).json({ success: false, message: 'Invalid doctorId. It must be a numeric value.' });
+    }
+
+    if (!date || isNaN(Date.parse(date))) {
+      return res.status(400).json({ success: false, message: 'Invalid date format. Use YYYY-MM-DD.' });
+    }
+
+    // Check if the doctor exists
+    const doctor = await Doctor.findByPk(doctorId, {
+      attributes: ['id', 'name', 'speciality'],
+    });
 
     if (!doctor) {
       return res.status(404).json({ success: false, message: 'Doctor not found.' });
     }
 
-    // Extract booked slots for the specified date
-    const slotsBooked = doctor.slots_booked[date] || [];
-    res.status(200).json({ success: true, bookedSlots: slotsBooked });
+    // Fetch appointments for the given doctor and date, excluding canceled appointments
+    const appointments = await Appointment.findAll({
+      where: {
+        doctorId,
+        slotDate: date,
+        cancelled: false, // Only include non-canceled appointments
+      },
+      attributes: ['slotTime'], // Fetch only the slotTime field
+    });
+
+    // Map the booked slots
+    const bookedSlots = appointments.map((appointment) => appointment.slotTime);
+
+    // Respond with booked slots
+    res.status(200).json({
+      success: true,
+      doctor: {
+        id: doctor.id,
+        name: doctor.name,
+        speciality: doctor.speciality,
+      },
+      bookedSlots,
+    });
   } catch (error) {
-    handleError(res, error, 'Failed to fetch doctor slots.');
+    console.error('Error fetching doctor slots:', error.message, error.stack);
+    res.status(500).json({ success: false, message: 'Failed to fetch doctor slots. Please try again later.' });
   }
 };
+
+
+// export const getDoctorSlots = async (req, res) => {
+//   const { doctorId } = req.params;
+//   const { date } = req.query; // Expecting a query parameter for date (e.g., YYYY-MM-DD)
+
+//   try {
+//     // Validate the input parameters
+//     if (!doctorId || isNaN(doctorId)) {
+//       return res.status(400).json({ success: false, message: 'Invalid doctorId.' });
+//     }
+
+//     if (!date || isNaN(Date.parse(date))) {
+//       return res.status(400).json({ success: false, message: 'Invalid date format. Use YYYY-MM-DD.' });
+//     }
+
+//     // Check if the doctor exists
+//     const doctor = await Doctor.findByPk(doctorId, {
+//       attributes: ['id', 'name', 'speciality'],
+//     });
+
+//     if (!doctor) {
+//       return res.status(404).json({ success: false, message: 'Doctor not found.' });
+//     }
+
+//     // Fetch appointments for the given doctor and date
+//     const appointments = await Appointment.findAll({
+//       where: { doctorId, slotDate: date, cancelled },
+//       attributes: ['slotTime'], // Fetch only slotTime
+//     });
+
+//     // Map the booked slots
+//     const bookedSlots = appointments.map((appointment) => appointment.slotTime);
+
+//     res.status(200).json({ success: true, bookedSlots });
+//   } catch (error) {
+//     console.error('Error fetching doctor slots:', {
+//       message: error.message,
+//       stack: error.stack,
+//     });
+//     res.status(500).json({ success: false, message: 'Failed to fetch doctor slots.' });
+//   }
+// };
+
+//   const { doctorId } = req.params;
+//   const { date } = req.query; // Expecting a query parameter for date (e.g., YYYY-MM-DD)
+
+//   try {
+//     // Validate that the doctor exists
+//     const doctor = await Doctor.findByPk(doctorId, {
+//       attributes: ['id', 'name', 'speciality'],
+//     });
+    
+//     if (!doctor) {
+//       return res.status(404).json({ success: false, message: 'Doctor not found.' });
+//     }
+
+//     // Fetch booked slots for the given doctor and date from the Appointment table
+//     const appointments = await Appointment.findAll({
+//         where: { doctorId, slotDate: date },
+//         attributes: ['slotTime'], // Only fetch the booked slot times
+//       });
+
+//     // Extract booked slots for the specified date
+//     const slotsBooked = doctor.slots_booked[date] || [];
+//     res.status(200).json({ success: true, bookedSlots: slotsBooked });
+//   } catch (error) {
+//     handleError(res, error, 'Failed to fetch doctor slots.');
+//   }
+// };

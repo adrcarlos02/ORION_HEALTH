@@ -3,147 +3,70 @@ import Doctor from '../models/Doctor.js';
 import Appointment from '../models/Appointment.js';
 import sequelize from '../config/db.js';
 
-// Book Appointment
+// // Book Appointment
+
 export const bookAppointment = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
-    console.log("REQBODY", req.body);
     const { doctorId, slotDate, slotTime } = req.body;
     const userId = req.userId; // Retrieved from auth middleware
 
     if (!doctorId || !slotDate || !slotTime) {
       await transaction.rollback();
-      console.log('####', doctorId, slotDate, slotTime);
-      return res.status(400).json({ success: false, message: 'All fields are required.' });
+      return res.status(400).json({ success: false, message: "All fields are required." });
     }
 
+    // Check if the doctor exists and is available
     const doctor = await Doctor.findByPk(doctorId, {
-      attributes: ['id', 'name', 'speciality', 'fees', 'slots_booked', 'available'],
+      attributes: ['id', 'name', 'speciality', 'fees', 'available'],
     });
 
     if (!doctor || !doctor.available) {
       await transaction.rollback();
-      return res.status(400).json({ success: false, message: 'Doctor not available.' });
+      return res.status(400).json({ success: false, message: "Doctor not available." });
     }
 
-    const slotsBooked = doctor.slots_booked || {};
-    if (slotsBooked[slotDate]?.includes(slotTime)) {
+    // Check if the slot is already booked
+    const existingAppointment = await Appointment.findOne({
+      where: { doctorId, slotDate, slotTime },
+      transaction, // Ensure this query is part of the transaction
+    });
+
+    if (existingAppointment) {
       await transaction.rollback();
-      return res.status(400).json({ success: false, message: 'Slot already booked.' });
+      return res.status(400).json({ success: false, message: "Slot already booked." });
     }
 
-    if (!slotsBooked[slotDate]) {
-      slotsBooked[slotDate] = [];
-    }
-    slotsBooked[slotDate].push(slotTime);
-
-    await Doctor.update(
-      { slots_booked: slotsBooked },
-      { where: { id: doctorId } }
-    );
-
-    const appointment = await Appointment.create(
+    // Create the appointment
+    const newAppointment = await Appointment.create(
       {
         userId,
         doctorId,
         slotDate,
         slotTime,
         amount: doctor.fees,
-      }
+      },
+      { transaction } // Ensure creation is part of the transaction
     );
 
     await transaction.commit();
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message: 'Appointment booked successfully.',
-      appointment,
+      message: "Appointment booked successfully.",
+      appointment: newAppointment,
     });
   } catch (error) {
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      await transaction.rollback();
+      return res.status(400).json({ success: false, message: "Slot is already booked." });
+    }
     await transaction.rollback();
-    console.error('Error booking appointment:', error);
-    res.status(500).json({ success: false, message: 'Internal server error.' });
+    console.error("Error booking appointment:", error.message);
+    return res.status(500).json({ success: false, message: "Internal Server Error." });
   }
 };
 
-// Cancel Appointment
-export const cancelAppointment = async (req, res) => {
-  const transaction = await sequelize.transaction();
-  try {
-    const { appointmentId } = req.body;
-    const userId = req.userId;
-
-    const appointment = await Appointment.findByPk(appointmentId);
-
-    if (!appointment) {
-      await transaction.rollback();
-      return res.status(404).json({ success: false, message: 'Appointment not found.' });
-    }
-
-    if (appointment.userId !== userId) {
-      await transaction.rollback();
-      return res.status(403).json({ success: false, message: 'Unauthorized action.' });
-    }
-
-    appointment.cancelled = true;
-    await appointment.save({ transaction });
-
-    const doctor = await Doctor.findByPk(appointment.doctorId);
-    const slotsBooked = doctor.slots_booked || {};
-    slotsBooked[appointment.slotDate] = slotsBooked[appointment.slotDate]?.filter(
-      (slot) => slot !== appointment.slotTime
-    );
-
-    if (!slotsBooked[appointment.slotDate]?.length) {
-      delete slotsBooked[appointment.slotDate];
-    }
-
-    await Doctor.update({ slots_booked: slotsBooked }, { where: { id: doctor.id }, transaction });
-
-    await transaction.commit();
-    res.status(200).json({ success: true, message: 'Appointment cancelled successfully.' });
-  } catch (error) {
-    await transaction.rollback();
-    console.error('Error cancelling appointment:', error);
-    res.status(500).json({ success: false, message: 'Error cancelling appointment.' });
-  }
-};
-
-// /**
-//  * List Appointments for Authenticated User.
-//  */
-// export const listAppointments = async (req, res) => {
-//   try {
-//     console.log('Entering listAppointments');
-//     const userId = req.userId; // Retrieved from auth middleware
-//     console.log('User ID:', userId);
-
-//     if (!userId) {
-//       console.error("Error: User ID is missing.");
-//       return res.status(400).json({ success: false, message: 'User ID is missing.' });
-//     }
-
-//     // Fetch appointments with associated Doctor data
-//     const appointments = await Appointment.findAll({
-//       where: { userId },
-//       include: [
-//         {
-//           model: Doctor,
-//           as: 'doctor', // Ensure this matches the association alias
-//           attributes: ['id', 'name', 'speciality', 'image', 'address'],
-//         },
-//       ],
-//       order: [['slotDate', 'DESC'], ['slotTime', 'DESC']],
-//     });
-
-//     console.log('Fetched appointments:', appointments);
-//     res.status(200).json({ success: true, appointments });
-//   } catch (error) {
-//     console.error('Error fetching user appointments:', error.message, error.stack);
-//     res.status(500).json({ success: false, message: 'Error fetching appointments.' });
-//   }
-// };
-
-// Get All Appointments for a Specific User
+// List Appointments for Authenticated User.
 export const getAppointmentsByUser = async (req, res) => {
   try {
     // Extract userId from the route parameters
@@ -195,6 +118,100 @@ export const getAppointmentsByUser = async (req, res) => {
     });
   }
 };
+
+
+
+// Cancel Appointment
+export const cancelAppointment = async (req, res) => {
+  console.log('cancelAppointment controller executed with data:', req.body);
+  const transaction = await sequelize.transaction();
+  try {
+    const { appointmentId } = req.body;
+    const userId = req.userId; // Retrieved from auth middleware
+
+    // Find the appointment
+    const appointment = await Appointment.findByPk(appointmentId);
+
+    if (!appointment) {
+      await transaction.rollback();
+      return res.status(404).json({ success: false, message: 'Appointment not found.' });
+    }
+
+    // Ensure the authenticated user owns the appointment
+    if (appointment.userId !== userId) {
+      await transaction.rollback();
+      return res.status(403).json({ success: false, message: 'Unauthorized action.' });
+    }
+
+    // Mark the appointment as canceled
+    appointment.cancelled = true;
+    await appointment.save({ transaction });
+
+    // Optional: Update Doctor's slots_booked (if applicable)
+    const doctor = await Doctor.findByPk(appointment.doctorId);
+    if (doctor) {
+      const slotsBooked = doctor.slots_booked || {};
+      const slotDate = appointment.slotDate;
+
+      // Remove the canceled slot from slots_booked
+      if (slotsBooked[slotDate]) {
+        slotsBooked[slotDate] = slotsBooked[slotDate].filter((slot) => slot !== appointment.slotTime);
+        if (slotsBooked[slotDate].length === 0) {
+          delete slotsBooked[slotDate];
+        }
+      }
+
+      await Doctor.update(
+        { slots_booked: slotsBooked },
+        { where: { id: doctor.id }, transaction }
+      );
+    }
+
+    await transaction.commit();
+    return res.status(200).json({ success: true, message: 'Appointment canceled successfully.' });
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Error canceling appointment:', error.message);
+    return res.status(500).json({ success: false, message: 'Error canceling appointment.' });
+  }
+};
+
+
+// export const cancelAppointment = async (req, res) => {
+//   console.log('cancelAppointment controller executed with data:', req.body);
+//   const transaction = await sequelize.transaction();
+//   try {
+//     const { appointmentId } = req.body;
+//     const userId = req.userId; // Retrieved from auth middleware
+
+//     // Find the appointment
+//     const appointment = await Appointment.findByPk(appointmentId);
+
+//     if (!appointment) {
+//       await transaction.rollback();
+//       return res.status(404).json({ success: false, message: 'Appointment not found.' });
+//     }
+
+//     // Ensure the authenticated user owns the appointment
+//     if (appointment.userId !== userId) {
+//       await transaction.rollback();
+//       return res.status(403).json({ success: false, message: 'Unauthorized action.' });
+//     }
+
+//     // Mark the appointment as cancelled
+//     appointment.cancelled = true;
+//     await appointment.save({ transaction });
+
+//     await transaction.commit();
+//     return res.status(200).json({ success: true, message: 'Appointment cancelled successfully.' });
+//   } catch (error) {
+//     await transaction.rollback();
+//     console.error('Error cancelling appointment:', error.message);
+//     return res.status(500).json({ success: false, message: 'Error cancelling appointment.' });
+//   }
+// };
+
+
 
 
 // List Appointments for Doctor
