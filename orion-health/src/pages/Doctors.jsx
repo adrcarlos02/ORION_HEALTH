@@ -39,13 +39,19 @@ const Doctors = () => {
 
     return (
         <div className="pt-8"> {/* Added padding at the top */}
-            <p className='text-gray-600 mb-4'>Select through our extensive list of quality healthcare providers.</p>
+            <p className="text-gray-600 mb-4">Select through our extensive list of quality healthcare providers.</p>
             <div className="flex flex-col lg:flex-row gap-5 mt-5">
                 
                 {/* Left column: Specialties list */}
                 <div className="w-full lg:w-1/5 pr-2"> {/* 20% width */}
                     {/* Accordion Header */}
-                    <div className="cursor-pointer mb-2 p-2 bg-gray-200 rounded" onClick={toggleAccordion}>
+                    <div 
+                        className={`cursor-pointer mb-2 p-2 rounded transition-all duration-300 
+                                    ${isAccordionOpen ? 'border-2 border-primary' : 'border-2 border-transparent'} 
+                                    hover:border-primary`}
+                        onClick={toggleAccordion}
+                        style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-color)' }}
+                    >
                         <p className="font-semibold">{isAccordionOpen ? 'Hide Specialties' : 'Show Specialties'}</p>
                     </div>
                     {isAccordionOpen && (
@@ -54,6 +60,7 @@ const Doctors = () => {
                                 className={`cursor-pointer ${speciality === 'all' ? 'font-bold text-navy underline' : 'text-gray-700'} 
                                             transition-transform duration-300 transform hover:scale-105 mb-2`}
                                 onClick={() => handleSpecialityClick('All Doctors')}
+                                style={{ color: 'var(--text-color)' }}
                             >
                                 All Doctors
                             </p>
@@ -63,6 +70,7 @@ const Doctors = () => {
                                     className={`cursor-pointer transition-transform duration-300 transform hover:scale-105 mb-2 
                                                 ${spec.toLowerCase() === speciality?.toLowerCase() ? 'font-bold text-navy underline' : 'text-gray-700'}`}
                                     onClick={() => handleSpecialityClick(spec)}
+                                    style={{ color: 'var(--text-color)' }}
                                 >
                                     {spec}
                                 </p>
@@ -79,6 +87,11 @@ const Doctors = () => {
                                 onClick={() => navigate(`/appointment/${item._id}`)}
                                 key={index}
                                 className="rounded-lg overflow-hidden shadow-md relative group cursor-pointer transition-transform duration-300 transform hover:scale-105"
+                                style={{
+                                    backgroundColor: 'var(--bg-color)', 
+                                    color: 'var(--text-color)',
+                                    border: '1px solid var(--primary-color)', // Add a border with dynamic color
+                                }}
                             >
                                 <div className="relative w-full h-0" style={{ paddingBottom: "177.78%" }}>
                                     <img
@@ -87,7 +100,13 @@ const Doctors = () => {
                                         className="absolute top-0 left-0 w-full h-full object-cover"
                                     />
                                 </div>
-                                <div className="absolute bottom-0 left-0 w-full bg-white p-2 sm:p-4 flex flex-col items-center text-center">
+                                <div 
+                                    className="absolute bottom-0 left-0 w-full bg-white p-2 sm:p-4 flex flex-col items-center text-center"
+                                    style={{
+                                        backgroundColor: 'var(--bg-color)', // Background color based on theme
+                                        color: 'var(--text-color)', // Text color based on theme
+                                    }}
+                                >
                                     <p className="text-xs text-green-500">Available</p>
                                     <p className="text-xs sm:text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">
                                         {item.name}
@@ -97,7 +116,7 @@ const Doctors = () => {
                             </div>
                         ))
                     ) : (
-                        <p className="text-center col-span-full">No doctors available for this specialty.</p>
+                        <p className="text-center col-span-full" style={{ color: 'var(--text-color)' }}>No doctors available for this specialty.</p>
                     )}
                 </div>
             </div>

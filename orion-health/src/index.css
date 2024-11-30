@@ -10,50 +10,72 @@
   box-sizing: border-box; /* Ensures padding and border are included in element's total width and height */
 }
 
-/* Style for active Nav Links */
-.active hr {
-  @apply block border-t-2 border-blue-500; /* Adjust color as needed */
+/* Theme-specific colors for non-card components */
+:root {
+  --bg-color: white; /* Default background color for body and non-card elements */
+  --text-color: black; /* Default text color for body */
+  --primary-color: #3b82f6; /* Default blue for primary elements */
+  --navbar-bg: white; /* Navbar background for light mode */
+  --navbar-text: black; /* Navbar text color for light mode */
 }
 
-/* Hide the scrollbar but keep scrolling functionality */
+.dark {
+  --bg-color: #1a202c; /* Dark mode background */
+  --text-color: #f9fafb; /* Light text on dark background */
+  --primary-color: #60a5fa; /* Adjusted lighter blue for dark mode */
+  --navbar-bg: #1f2937; /* Navbar background for dark mode */
+  --navbar-text: #f3f4f6; /* Navbar text color for dark mode */
+}
+
+/* Apply theme colors globally */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s; /* Smooth transition for theme changes */
+}
+
+/* Navbar */
+nav {
+  background-color: var(--navbar-bg);
+  color: var(--navbar-text);
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+nav a {
+  color: var(--navbar-text);
+}
+
+nav a:hover {
+  color: var(--primary-color); /* Adds hover effect to navbar links */
+}
+
+/* Buttons */
+.btn-primary {
+  @apply font-semibold py-2 px-4 rounded-lg;
+  background-color: var(--primary-color);
+  color: white; /* Button text remains white */
+  @apply hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+}
+
+/* Form Inputs */
+.form-input {
+  @apply w-full px-4 py-2 border rounded-lg;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--primary-color);
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   display: none; /* Hides scrollbar for webkit browsers */
 }
 
-/* Custom scrollbar styling for non-webkit browsers */
 * {
   scrollbar-width: none; /* For Firefox */
 }
 
-/* Common Utility Classes */
-.btn-primary {
-  @apply bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg 
-         hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
-}
-
-.form-input {
-  @apply w-full px-4 py-2 border border-gray-300 rounded-lg 
-         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
-}
-
-.form-label {
-  @apply block text-sm font-medium text-gray-600;
-}
-
-/* Adjustments for the Login page */
-.login-container {
-  @apply flex items-center justify-center min-h-screen bg-cover bg-center;
-}
-
-.login-form {
-  @apply w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md backdrop-blur-sm;
-}
-
-.login-heading {
-  @apply text-2xl font-bold text-center text-gray-800;
-}
-
-/* Add responsive typography */
+/* Responsive Typography */
 @media (min-width: 768px) {
   .login-heading {
     @apply text-3xl; /* Increase heading size on larger screens */
@@ -62,15 +84,4 @@
   .login-form {
     @apply p-10; /* Increase padding on larger screens */
   }
-}
-
-/* Add transitions for buttons and inputs */
-.btn-primary,
-.form-input {
-  @apply transition duration-200 ease-in-out; /* Smooth transition for interactive elements */
-}
-
-/* Add hover effects for the login form */
-.login-form:hover {
-  @apply shadow-lg; /* Increase shadow on hover for depth */
 }

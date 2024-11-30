@@ -158,13 +158,13 @@ const Appointment = () => {
   if (!docInfo || isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <p className="text-center text-gray-500">Loading...</p>
+        <p className="text-center" style={{ color: "black" }}>Loading...</p> {/* Static black color */}
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6" style={{ backgroundColor: "white", color: "black" }}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Doctor Info */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
@@ -173,18 +173,25 @@ const Appointment = () => {
             alt={`${docInfo.name}'s profile`}
             className="rounded-lg shadow-md w-full h-auto object-cover"
           />
-          <h2 className="text-3xl font-semibold text-gray-800 mt-6">{docInfo.name}</h2>
-          <p className="text-lg text-gray-600">
+          <h2 className="text-3xl font-semibold mt-6">{docInfo.name}</h2>
+          <p className="text-lg">
             {docInfo.degree} - {docInfo.speciality}
           </p>
-          <p className="text-lg font-medium text-gray-700 mt-4">
+          <p className="text-lg font-medium mt-4">
             Appointment fee: {docInfo.fees} {currency}
           </p>
+          {/* Display additional information */}
+          {docInfo.about && (
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold">About the Doctor</h3>
+              <p className="text-sm text-gray-600">{docInfo.about}</p>
+            </div>
+          )}
         </div>
 
         {/* Appointment Booking */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h3 className="text-2xl font-semibold text-gray-800 mb-4">Book Your Appointment</h3>
+          <h3 className="text-2xl font-semibold mb-4">Book Your Appointment</h3>
 
           <input
             type="date"
@@ -196,7 +203,7 @@ const Appointment = () => {
           />
 
           <div className="mt-6">
-            <h4 className="text-xl font-semibold text-gray-700 mb-2">
+            <h4 className="text-xl font-semibold mb-2">
               Available Slots for {daysOfWeek[selectedDate.getDay()]}:
             </h4>
             {docSlots.length > 0 ? (
@@ -205,11 +212,11 @@ const Appointment = () => {
                   <div
                     key={index}
                     onClick={() => !slot.isDisabled && setSlotTime(slot.time)}
-                    className={`py-2 px-6 rounded-full cursor-pointer ${
+                    className={`py-2 px-6 rounded-full cursor-pointer transition-all ${
                       slot.time === slotTime
                         ? "bg-blue-500 text-white"
                         : slot.isDisabled
-                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                        ? "bg-gray-200 text-gray-500 cursor-not-allowed line-through"
                         : "bg-gray-100 border border-gray-300"
                     }`}
                     title={slot.isDisabled ? "This slot is unavailable." : "Click to select this slot"}
@@ -219,7 +226,7 @@ const Appointment = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">No slots available for this date.</p>
+              <p className="text-black">No slots available for this date.</p> 
             )}
           </div>
 

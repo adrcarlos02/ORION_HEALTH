@@ -64,7 +64,6 @@ const MyAppointments = () => {
       const { data } = await axios.post("/api/appointments/cancel", { appointmentId });
       if (data.success) {
         toast.success("Appointment canceled successfully.");
-
         setAppointments((prev) =>
           prev.map((appt) =>
             appt.id === appointmentId ? { ...appt, cancelled: true } : appt
@@ -137,8 +136,11 @@ const MyAppointments = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <p className="text-lg text-gray-500">Loading appointments...</p>
+      <div
+        className="flex justify-center items-center h-screen"
+        style={{ backgroundColor: "var(--bg-color)", color: "var(--text-color)" }}
+      >
+        <p className="text-lg">Loading appointments...</p>
       </div>
     );
   }
@@ -149,13 +151,16 @@ const MyAppointments = () => {
   ];
 
   return (
-    <div className="container mx-auto p-6">
+    <div
+      className="container mx-auto p-6"
+      style={{ backgroundColor: "var(--bg-color)", color: "var(--text-color)" }}
+    >
       <h2 className="text-3xl font-bold text-center mb-6">My Appointments</h2>
 
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div>
-          <label htmlFor="specialty" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="specialty" className="block text-sm font-medium">
             Specialty
           </label>
           <select
@@ -163,7 +168,12 @@ const MyAppointments = () => {
             name="specialty"
             value={filters.specialty}
             onChange={handleFilterChange}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+            className="mt-1 block w-full p-2 rounded-md"
+            style={{
+              backgroundColor: "var(--bg-color)",
+              color: "var(--text-color)",
+              borderColor: "var(--primary-color)",
+            }}
           >
             <option value="">All</option>
             {specialties.map((specialty, idx) => (
@@ -175,7 +185,7 @@ const MyAppointments = () => {
         </div>
 
         <div>
-          <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="date" className="block text-sm font-medium">
             Date
           </label>
           <input
@@ -184,12 +194,17 @@ const MyAppointments = () => {
             name="date"
             value={filters.date}
             onChange={handleFilterChange}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+            className="mt-1 block w-full p-2 rounded-md"
+            style={{
+              backgroundColor: "var(--bg-color)",
+              color: "var(--text-color)",
+              borderColor: "var(--primary-color)",
+            }}
           />
         </div>
 
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="status" className="block text-sm font-medium">
             Status
           </label>
           <select
@@ -197,7 +212,12 @@ const MyAppointments = () => {
             name="status"
             value={filters.status}
             onChange={handleFilterChange}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+            className="mt-1 block w-full p-2 rounded-md"
+            style={{
+              backgroundColor: "var(--bg-color)",
+              color: "var(--text-color)",
+              borderColor: "var(--primary-color)",
+            }}
           >
             <option value="">All</option>
             <option value="Scheduled">Scheduled</option>
@@ -209,30 +229,38 @@ const MyAppointments = () => {
       {/* Reset Filters */}
       <button
         onClick={resetFilters}
-        className="mb-6 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+        className="mb-6 px-4 py-2 rounded-md"
+        style={{
+          backgroundColor: "var(--primary-color)",
+          color: "white",
+        }}
       >
         Reset Filters
       </button>
 
       {/* Appointments */}
       {currentAppointments.length === 0 ? (
-        <p className="text-center text-gray-500">No appointments found for the selected filters.</p>
+        <p className="text-center">No appointments found for the selected filters.</p>
       ) : (
         currentAppointments.map((appointment, index) => (
           <div
             key={appointment.id || `${appointment.slotDate}-${appointment.slotTime}-${index}`}
-            className="flex flex-col sm:flex-row justify-between items-center bg-white border p-4 mb-4 rounded-lg shadow-md"
+            className="flex flex-col sm:flex-row justify-between items-center border p-4 mb-4 rounded-lg shadow-md"
+            style={{
+              backgroundColor: "var(--bg-color)",
+              borderColor: "var(--primary-color)",
+            }}
           >
             <div>
               <h3 className="text-lg font-semibold">{appointment.doctor.name}</h3>
-              <p className="text-sm text-gray-600">{appointment.doctor.speciality}</p>
-              <p className="text-gray-700">
+              <p>{appointment.doctor.speciality}</p>
+              <p>
                 <strong>Date:</strong> {formatDate(appointment.slotDate)}
               </p>
-              <p className="text-gray-700">
+              <p>
                 <strong>Time:</strong> {appointment.slotTime}
               </p>
-              <p className="text-gray-700">
+              <p>
                 <strong>Status:</strong>{" "}
                 {appointment.cancelled ? (
                   <span className="text-red-500">Cancelled</span>
@@ -245,7 +273,11 @@ const MyAppointments = () => {
             {!appointment.cancelled && (
               <button
                 onClick={() => handleCancel(appointment.id)}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                className="px-4 py-2 rounded-lg"
+                style={{
+                  backgroundColor: "var(--primary-color)",
+                  color: "white",
+                }}
                 disabled={cancelling === appointment.id}
               >
                 {cancelling === appointment.id ? "Cancelling..." : "Cancel"}
@@ -263,11 +295,11 @@ const MyAppointments = () => {
           <button
             key={index}
             onClick={() => paginate(index + 1)}
-            className={`px-4 py-2 mx-1 rounded-lg ${
-              currentPage === index + 1
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+            className="px-4 py-2 mx-1 rounded-lg"
+            style={{
+              backgroundColor: currentPage === index + 1 ? "var(--primary-color)" : "var(--bg-color)",
+              color: currentPage === index + 1 ? "white" : "var(--text-color)",
+            }}
           >
             {index + 1}
           </button>

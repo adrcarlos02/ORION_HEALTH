@@ -55,15 +55,31 @@ const Login = () => {
   return (
     <div
       className="flex items-center justify-center min-h-screen bg-cover bg-center"
-      style={{ backgroundImage: `url(${bannerImages[currentImageIndex]})` }}
+      style={{
+        backgroundImage: `url(${bannerImages[currentImageIndex]})`,
+        backgroundColor: 'var(--bg-color)', // Dynamic background color
+      }}
     >
       <ToastContainer /> {/* Toastify Container for notifications */}
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md backdrop-blur-sm">
-        <h2 className="text-2xl font-bold text-center text-gray-800">Login to Your Account</h2>
+      <div
+        className="w-full max-w-md p-8 space-y-6 rounded-lg shadow-md backdrop-blur-sm"
+        style={{
+          backgroundColor: 'var(--bg-color)', // Use dynamic background
+          color: 'var(--text-color)', // Dynamic text color
+        }}
+      >
+        <h2
+          className="text-2xl font-bold text-center"
+          style={{ color: 'var(--text-color)' }}
+        >
+          Login to Your Account
+        </h2>
 
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
-            <label className="block text-sm font-medium text-gray-600">Email</label>
+            <label className="block text-sm font-medium" style={{ color: 'var(--text-color)' }}>
+              Email
+            </label>
             <input
               type="email"
               value={email}
@@ -71,11 +87,14 @@ const Login = () => {
               placeholder="you@example.com"
               className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
+              style={{ backgroundColor: 'var(--input-bg-color)', color: 'var(--text-color)' }}
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-600">Password</label>
+            <label className="block text-sm font-medium" style={{ color: 'var(--text-color)' }}>
+              Password
+            </label>
             <input
               type="password"
               value={password}
@@ -83,9 +102,10 @@ const Login = () => {
               placeholder="••••••••"
               className="w-full px-4 py-2 mt-1 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
+              style={{ backgroundColor: 'var(--input-bg-color)', color: 'var(--text-color)' }}
             />
           </div>
-          
+
           <button
             type="submit"
             className="w-full px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -95,8 +115,8 @@ const Login = () => {
         </form>
 
         <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account? 
+          <p className="text-sm" style={{ color: 'var(--text-color)' }}>
+            Don't have an account?{' '}
             <button
               onClick={() => navigate('/signup')}
               className="font-semibold text-blue-500 hover:underline ml-1"

@@ -6,7 +6,6 @@ dotenv.config();
 
 // User authentication middleware
 const authUser = (req, res, next) => {
-    console.log("authUser middleware executed");
     const token = req.cookies.jwtToken; // Get token from cookies
 
     if (!token) {
