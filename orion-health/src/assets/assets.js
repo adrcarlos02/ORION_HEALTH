@@ -40,6 +40,7 @@ import BannerGeneralPhysician from './BannerGeneralPhysican.png';
 import BannerMaternalHealth from './BannerMaternalHealth.png';
 import BannerNeurology from './BannerNeurology.png';
 import BannerSkinHealth from './BannerSkinHealth.png';
+import defaultUserphoto from './defaultUserphoto.png';
 
 export const assets = {
     appointment_img,
@@ -64,6 +65,7 @@ export const assets = {
     BannerMaternalHealth,
     BannerNeurology,
     BannerSkinHealth,
+    defaultUserphoto
 }
 
 export const specialityData = [

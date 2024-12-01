@@ -133,6 +133,42 @@ export const getAdminProfile = async (req, res) => {
 };
 
 
+export const updateAdminProfile = async (req, res) => {
+  try {
+    console.log("Request Body:", req.body); // Debugging
+    const adminId = req.adminId; // Extracted from middleware
+    const { name, email } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({ success: false, message: "Name and email are required." });
+    }
+
+    const admin = await Admin.findByPk(adminId);
+    if (!admin) {
+      return res.status(404).json({ success: false, message: "Admin not found." });
+    }
+
+    // Update details
+    admin.name = name;
+    admin.email = email;
+
+    await admin.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully.",
+      admin: {
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating admin profile:", error);
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
 // Create admin
 export const createAdmin = async (req, res) => {
   try {
