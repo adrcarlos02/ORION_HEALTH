@@ -1,24 +1,28 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 const authAdmin = async (req, res, next) => {
   try {
-    const { atoken } = req.headers;
+    // Extract Bearer token from the Authorization header
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(" ")[1];
 
-    if (!atoken) {
-      return res.status(401).json({ success: false, message: 'Not Authorized' });
+    if (!token) {
+      return res.status(401).json({ success: false, message: "Not Authorized." });
     }
 
-    const tokenDecode = jwt.verify(atoken, process.env.JWT_SECRET);
-    const isValid = tokenDecode === process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD;
+    // Verify the token using the admin-specific secret
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_ADMIN);
 
-    if (!isValid) {
-      return res.status(403).json({ success: false, message: 'Invalid Token' });
+    // Check if the role is admin
+    if (decoded.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Access denied: Admins only." });
     }
 
+    req.adminId = decoded.id; // Attach admin ID to the request
     next();
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error("Admin auth error:", error);
+    res.status(500).json({ success: false, message: "Server error. Please try again later." });
   }
 };
 

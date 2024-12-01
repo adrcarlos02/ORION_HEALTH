@@ -4,7 +4,6 @@ import Appointment from '../models/Appointment.js';
 import sequelize from '../config/db.js';
 
 // // Book Appointment
-
 export const bookAppointment = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
@@ -120,7 +119,6 @@ export const getAppointmentsByUser = async (req, res) => {
 };
 
 
-
 // Cancel Appointment
 export const cancelAppointment = async (req, res) => {
   console.log('cancelAppointment controller executed with data:', req.body);
@@ -177,7 +175,61 @@ export const cancelAppointment = async (req, res) => {
 };
 
 
-// export const cancelAppointment = async (req, res) => {
+
+//-------------(specific admin feature)-------------
+//Get all appointments 
+export const getAllAppointments = async (req, res) => {
+  try {
+    const { doctorId, userId, date } = req.query; // Optional filters
+
+    // Build query conditions dynamically based on filters
+    const conditions = {};
+    if (doctorId) conditions.doctorId = doctorId;
+    if (userId) conditions.userId = userId;
+    if (date) conditions.slotDate = date;
+
+    // Fetch appointments with associated User and Doctor data
+    const appointments = await Appointment.findAll({
+      where: conditions,
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'name', 'email', 'phone', 'image'], // Include specific user details
+        },
+        {
+          model: Doctor,
+          as: 'doctor',
+          attributes: ['id', 'name', 'speciality', 'fees'], // Include specific doctor details
+        },
+      ],
+      order: [['slotDate', 'DESC'], ['slotTime', 'ASC']], // Order by date and time
+    });
+
+    if (!appointments || appointments.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No appointments found.',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Appointments retrieved successfully.',
+      appointments,
+    });
+  } catch (error) {
+    console.error('Error fetching all appointments:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while fetching appointments.',
+    });
+  }
+};
+
+
+
+
+
 //   console.log('cancelAppointment controller executed with data:', req.body);
 //   const transaction = await sequelize.transaction();
 //   try {
@@ -232,5 +284,106 @@ export const getAppointmentsByDoctor = async (req, res) => {
   } catch (error) {
     console.error('Error fetching appointments for doctor:', error);
     res.status(500).json({ success: false, message: 'Error fetching appointments.' });
+  }
+};
+
+
+
+
+//Delete appointment
+export const deleteAppointment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the appointment exists
+    const appointment = await Appointment.findByPk(id);
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found.',
+      });
+    }
+
+    // Delete the appointment
+    await appointment.destroy();
+    res.status(200).json({
+      success: true,
+      message: 'Appointment deleted successfully.',
+    });
+  } catch (error) {
+    console.error('Error deleting appointment:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while deleting the appointment.',
+    });
+  }
+};
+
+//update appointment
+export const updateAppointment = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { id } = req.params; // Appointment ID to update
+    const { doctorId, slotDate, slotTime, amount, isCompleted } = req.body;
+
+    // Fetch the existing appointment
+    const appointment = await Appointment.findByPk(id);
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found.',
+      });
+    }
+
+    // Check if the doctor exists
+    if (doctorId) {
+      const doctor = await Doctor.findByPk(doctorId);
+      if (!doctor) {
+        return res.status(404).json({
+          success: false,
+          message: 'Doctor not found.',
+        });
+      }
+
+      // Check if the new slot is available
+      if (slotDate && slotTime) {
+        const existingAppointment = await Appointment.findOne({
+          where: { doctorId, slotDate, slotTime },
+        });
+
+        if (existingAppointment && existingAppointment.id !== parseInt(id)) {
+          return res.status(400).json({
+            success: false,
+            message: 'The specified slot is already booked for the selected doctor.',
+          });
+        }
+      }
+    }
+
+    // Update appointment fields
+    appointment.doctorId = doctorId || appointment.doctorId;
+    appointment.slotDate = slotDate || appointment.slotDate;
+    appointment.slotTime = slotTime || appointment.slotTime;
+    appointment.amount = amount || appointment.amount;
+    appointment.isCompleted =
+      typeof isCompleted === 'boolean' ? isCompleted : appointment.isCompleted;
+
+    // Save the updated appointment
+    await appointment.save({ transaction });
+    await transaction.commit();
+
+    res.status(200).json({
+      success: true,
+      message: 'Appointment updated successfully.',
+      appointment,
+    });
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Error updating appointment:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while updating the appointment.',
+    });
   }
 };
