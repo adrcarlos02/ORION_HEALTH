@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
+import { AdminContext } from "../context/AdminContext"; // Import AdminContext
 import { ThemeContext } from "../context/ThemeContext";
 import { assets } from "../assets/assets";
 
@@ -8,11 +9,16 @@ const Navbar = () => {
   const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
   const { user, setUser } = useContext(UserContext);
+  const { admin, logoutAdmin } = useContext(AdminContext); // Use AdminContext
   const { theme, toggleTheme } = useContext(ThemeContext);
 
   const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("jwtToken");
+    if (admin) {
+      logoutAdmin(); // Logout admin
+    } else {
+      setUser(null);
+      localStorage.removeItem("jwtToken");
+    }
     navigate("/login");
   };
 
@@ -69,7 +75,7 @@ const Navbar = () => {
           }`}
         >
           <ul className="flex flex-col md:flex-row items-center w-full md:space-x-6">
-            {/* Navigation Links */}
+            {/* Public Navigation Links */}
             {[
               { path: "/", label: "Home" },
               { path: "/about", label: "About" },
@@ -91,8 +97,49 @@ const Navbar = () => {
               </li>
             ))}
 
-            {/* Conditional User Links */}
-            {user ? (
+            {/* Conditional Links */}
+            {admin ? (
+              // Admin Links
+              <>
+                <li>
+                  <NavLink
+                    to="/admin/dashboard"
+                    className={({ isActive }) =>
+                      `block py-2 px-4 rounded md:py-0 md:px-0 ${
+                        isActive
+                          ? "text-blue-600 dark:text-blue-400 font-semibold"
+                          : "text-gray-700 dark:text-gray-300"
+                      } hover:text-blue-500 dark:hover:text-blue-300`
+                    }
+                  >
+                    Dashboard
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/admin/profile"
+                    className={({ isActive }) =>
+                      `block py-2 px-4 rounded md:py-0 md:px-0 ${
+                        isActive
+                          ? "text-blue-600 dark:text-blue-400 font-semibold"
+                          : "text-gray-700 dark:text-gray-300"
+                      } hover:text-blue-500 dark:hover:text-blue-300`
+                    }
+                  >
+                    Admin Profile
+                  </NavLink>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="block py-2 px-4 text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-300 rounded"
+                  >
+                    Logout
+                  </button>
+                </li>
+              </>
+            ) : user ? (
+              // User Links
               <>
                 <li>
                   <NavLink
@@ -146,6 +193,7 @@ const Navbar = () => {
                 </li>
               </>
             ) : (
+              // Guest Links
               <>
                 <li>
                   <NavLink
