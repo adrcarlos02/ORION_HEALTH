@@ -27,6 +27,8 @@
   --navbar-text: #f3f4f6; /* Navbar text color for dark mode */
 }
 
+
+
 /* Apply theme colors globally */
 body {
   background-color: var(--bg-color);
