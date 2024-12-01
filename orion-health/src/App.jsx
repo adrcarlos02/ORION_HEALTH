@@ -19,8 +19,11 @@ import MyProfile from "./pages/MyProfile";
 import NotFound from "./pages/NotFound"; // Import NotFound page
 import AdminLogin from "./pages/AdminLogin"; // Admin login page
 import AdminDashboard from "./pages/AdminDashboard"; // Admin dashboard
+import AdminManager from "./pages/AdminManager"; // Admin manager page
 import AdminUsers from "./pages/AdminUsers"; // Admin users management
 import AdminProfile from "./pages/AdminProfile"; // Admin profile page
+import AppointmentManager from "./pages/AppointmentManager"; // Appointment manager page
+import UserManager from "./pages/UserManager"; // User management page
 import "./index.css";
 
 // Private route for users
@@ -79,12 +82,24 @@ const App = () => {
                 element={<PrivateAdminRoute element={<AdminDashboard />} />}
               />
               <Route
+                path="/admin-manager"
+                element={<PrivateAdminRoute element={<AdminManager />} />}
+              />
+              <Route
                 path="/admin/users"
                 element={<PrivateAdminRoute element={<AdminUsers />} />}
               />
               <Route
+                path="/appointment-manager"
+                element={<PrivateAdminRoute element={<AppointmentManager />} />}
+              />
+              <Route
                 path="/admin/profile"
                 element={<PrivateAdminRoute element={<AdminProfile />} />}
+              />
+              <Route
+                path="/user-manager"
+                element={<PrivateAdminRoute element={<UserManager />} />}
               />
 
               {/* Catch-all route for 404 */}

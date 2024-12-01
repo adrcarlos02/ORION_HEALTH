@@ -1,9 +1,15 @@
 import React, { useContext } from "react";
 import { AdminContext } from "../context/AdminContext";
 import Sidebar from "../components/Sidebar"; // Import the Sidebar component
+import { useNavigate } from "react-router-dom"; // Import useNavigate for programmatic navigation
 
 const AdminDashboard = () => {
   const { admin } = useContext(AdminContext);
+  const navigate = useNavigate(); // Hook for navigating programmatically
+
+  const handleNavigateToAdminManager = () => {
+    navigate("/admin-manager"); // Navigate to the Admin Manager page
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -29,12 +35,12 @@ const AdminDashboard = () => {
             <p className="text-gray-600 mt-2">
               Add, update, or remove admin accounts.
             </p>
-            <a
-              href="/admin-manager"
+            <button
+              onClick={handleNavigateToAdminManager} // Using navigate function to go to Admin Manager
               className="text-blue-500 hover:underline mt-4 inline-block"
             >
               Manage Admins
-            </a>
+            </button>
           </div>
 
           <div className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition hover:bg-gray-200">
@@ -44,12 +50,12 @@ const AdminDashboard = () => {
             <p className="text-gray-600 mt-2">
               View, update, or delete user accounts.
             </p>
-            <a
-              href="/user-manager"
+            <button
+              onClick={() => navigate("/user-manager")} // Use navigate for User Manager
               className="text-blue-500 hover:underline mt-4 inline-block"
             >
               Manage Users
-            </a>
+            </button>
           </div>
 
           <div className="p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition hover:bg-gray-200">
@@ -59,12 +65,12 @@ const AdminDashboard = () => {
             <p className="text-gray-600 mt-2">
               Approve, update, or cancel appointments.
             </p>
-            <a
-              href="/appointment-manager"
+            <button
+              onClick={() => navigate("/appointment-manager")} // Use navigate for Appointment Manager
               className="text-blue-500 hover:underline mt-4 inline-block"
             >
               Manage Appointments
-            </a>
+            </button>
           </div>
         </div>
       </div>

@@ -19,7 +19,8 @@ import {
   deleteAppointment,
 } from '../controllers/appointmentController.js';
 
-import authAdmin from "../middleware/authAdmin.js"; // Ensure middleware is correctly imported
+import { registerUser } from "../controllers/userController.js";
+import authAdmin from "../middleware/authAdmin.js";
 
 const adminRouter = express.Router();
 
@@ -37,6 +38,7 @@ adminRouter.put("/admins/:id", authAdmin, updateAdmin);
 adminRouter.delete("/admins/:id", authAdmin, deleteAdmin);
 
 // User management
+adminRouter.post("/users", authAdmin, registerUser);
 adminRouter.get("/users", authAdmin, getAllUsers);
 adminRouter.get("/users/:id", authAdmin, getSingleUser);
 adminRouter.put("/users/:id", authAdmin, updateUser);
