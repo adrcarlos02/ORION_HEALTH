@@ -25,36 +25,113 @@ const validateResourceById = async (Model, id, resourceName) => {
 // ADMIN CONTROLLERS
 
 // Admin login
+// export const loginAdmin = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     // Find admin by email
+//     const admin = await Admin.findOne({ where: { email } });
+//     if (!admin) {
+//       return res.status(404).json({ success: false, message: "Admin not found." });
+//     }
+
+//     // Validate password
+//     const isPasswordValid = await bcrypt.compare(password, admin.password);
+//     if (!isPasswordValid) {
+//       return res.status(401).json({ success: false, message: "Invalid credentials." });
+//     }
+
+//     // Generate admin token
+//     const token = jwt.sign({ id: admin.id, role: "admin" }, process.env.JWT_SECRET_ADMIN, {
+//       expiresIn: "1d",
+//     });
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Admin logged in successfully.",
+//       token,
+//     });
+//   } catch (error) {
+//     handleServerError(res, error, "Admin login error");
+//   }
+// };
+
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Check if email and password are provided
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "Email and password are required." });
+    }
+
     // Find admin by email
     const admin = await Admin.findOne({ where: { email } });
     if (!admin) {
-      return res.status(404).json({ success: false, message: "Admin not found." });
+      return res.status(401).json({ success: false, message: "Invalid email or password." });
     }
 
     // Validate password
     const isPasswordValid = await bcrypt.compare(password, admin.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ success: false, message: "Invalid credentials." });
+      return res.status(401).json({ success: false, message: "Invalid email or password." });
     }
 
     // Generate admin token
     const token = jwt.sign({ id: admin.id, role: "admin" }, process.env.JWT_SECRET_ADMIN, {
-      expiresIn: "1d",
+      expiresIn: "1d", // Token expires in 1 day
     });
 
+    // Send success response with token and admin details
     res.status(200).json({
       success: true,
       message: "Admin logged in successfully.",
       token,
+      admin: {
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+      },
     });
   } catch (error) {
-    handleServerError(res, error, "Admin login error");
+    console.error("Admin login error:", error);
+    res.status(500).json({ success: false, message: "Server error. Please try again later." });
   }
 };
+
+//Get Admin profile
+export const getAdminProfile = async (req, res) => {
+  try {
+    // Validate admin ID from middleware
+    if (!req.adminId) {
+      return res.status(400).json({ success: false, message: "Invalid request: Admin ID is missing." });
+    }
+
+    const adminId = req.adminId; // Extract admin ID from the token (set by authAdmin middleware)
+    const admin = await Admin.findByPk(adminId, {
+      attributes: { exclude: ["password"] }, // Exclude sensitive fields like password
+    });
+
+    // Check if admin exists
+    if (!admin) {
+      return res.status(404).json({ success: false, message: "Admin not found." });
+    }
+
+    // Send success response with admin details
+    res.status(200).json({
+      success: true,
+      message: "Admin profile retrieved successfully.",
+      admin,
+    });
+  } catch (error) {
+    // Log the error for debugging
+    console.error("Error fetching admin profile:", error);
+
+    // Send error response
+    res.status(500).json({ success: false, message: "Server error. Please try again later." });
+  }
+};
+
 
 // Create admin
 export const createAdmin = async (req, res) => {

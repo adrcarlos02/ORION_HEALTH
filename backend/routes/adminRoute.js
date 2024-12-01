@@ -1,6 +1,7 @@
 import express from "express";
 import {
   loginAdmin,
+  getAdminProfile,
   createAdmin,
   getAllAdmins,
   updateAdmin,
@@ -24,6 +25,9 @@ const adminRouter = express.Router();
 
 // Admin authentication
 adminRouter.post("/login", loginAdmin);
+
+// Add admin profile route
+adminRouter.get("/profile", authAdmin, getAdminProfile);
 
 // Admin CRUD //
 adminRouter.post("/admins", authAdmin, createAdmin);
