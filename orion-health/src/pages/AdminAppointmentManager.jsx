@@ -64,8 +64,24 @@ const AdminAppointmentManager = () => {
     const confirmCancel = window.confirm("Are you sure you want to cancel this appointment?");
     if (confirmCancel) {
       try {
-        // POST request to cancel appointment
-        await axios.post(`/admin/appointments/cancel`, { appointmentId: id });
+        // Get the token from localStorage (assuming you store the token there after login)
+        const token = localStorage.getItem("adminToken");
+  
+        if (!token) {
+          toast.error("You are not authenticated. Please log in.");
+          return;
+        }
+  
+        // POST request to cancel appointment with Authorization header
+        await axios.post(
+          `/appointments/cancel`, 
+          { appointmentId: id },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         toast.success("Appointment cancelled successfully!");
         fetchAppointments(); // Refresh the list after canceling
       } catch (error) {
