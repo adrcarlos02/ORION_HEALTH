@@ -22,7 +22,7 @@ import AdminDashboard from "./pages/AdminDashboard"; // Admin dashboard
 import AdminManager from "./pages/AdminManager"; // Admin manager page
 import AdminUsers from "./pages/AdminUsers"; // Admin users management
 import AdminProfile from "./pages/AdminProfile"; // Admin profile page
-import AppointmentManager from "./pages/AppointmentManager"; // Appointment manager page
+import AppointmentManager from "./pages/AdminAppointmentManager"; // Appointment manager page
 import UserManager from "./pages/UserManager"; // User management page
 import "./index.css";
 

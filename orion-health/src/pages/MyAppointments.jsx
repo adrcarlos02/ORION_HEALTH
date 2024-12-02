@@ -255,6 +255,9 @@ const MyAppointments = () => {
               <h3 className="text-lg font-semibold">{appointment.doctor.name}</h3>
               <p>{appointment.doctor.speciality}</p>
               <p>
+                <strong>ID:</strong> {appointment.id}
+              </p>
+              <p>
                 <strong>Date:</strong> {formatDate(appointment.slotDate)}
               </p>
               <p>

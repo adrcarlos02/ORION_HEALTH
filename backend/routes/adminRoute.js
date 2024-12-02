@@ -2,7 +2,7 @@ import express from "express";
 import {
   loginAdmin,
   getAdminProfile,
-  updateAdminProfile, // Import the updateAdminProfile controller
+  updateAdminProfile,
   createAdmin,
   getAllAdmins,
   updateAdmin,
@@ -15,6 +15,7 @@ import {
 
 import {
   getAllAppointments,
+  getAppointmentById,
   updateAppointment,
   deleteAppointment,
 } from '../controllers/appointmentController.js';
@@ -28,8 +29,8 @@ const adminRouter = express.Router();
 adminRouter.post("/login", loginAdmin);
 
 // Admin profile routes
-adminRouter.get("/profile", authAdmin, getAdminProfile); // Fetch profile
-adminRouter.put("/profile", authAdmin, updateAdminProfile); // Update profile
+adminRouter.get("/profile", authAdmin, getAdminProfile);
+adminRouter.put("/profile", authAdmin, updateAdminProfile);
 
 // Admin CRUD
 adminRouter.post("/admins", authAdmin, createAdmin);
@@ -39,14 +40,20 @@ adminRouter.delete("/admins/:id", authAdmin, deleteAdmin);
 
 // User management
 adminRouter.post("/users", authAdmin, registerUser);
-adminRouter.get("/users", authAdmin, getAllUsers);
+adminRouter.get("/users", authAdmin, getAllUsers); 
 adminRouter.get("/users/:id", authAdmin, getSingleUser);
 adminRouter.put("/users/:id", authAdmin, updateUser);
 adminRouter.delete("/users/:id", authAdmin, deleteUser);
 
 // Appointment management
-adminRouter.get("/appointments", authAdmin, getAllAppointments);
+adminRouter.get("/appointments", authAdmin, getAllAppointments); 
+adminRouter.get("/appointments/:id", authAdmin, getAppointmentById);
 adminRouter.put("/appointments/:id", authAdmin, updateAppointment);
 adminRouter.delete("/appointments/:id", authAdmin, deleteAppointment);
+
+// 404 fallback
+adminRouter.all("*", (req, res) => {
+  res.status(404).json({ success: false, message: "Route not found." });
+});
 
 export default adminRouter;

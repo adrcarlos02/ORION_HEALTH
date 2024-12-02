@@ -12,23 +12,26 @@ const AdminManager = () => {
   // Retrieve the current logged-in admin's ID
   const currentAdminId = localStorage.getItem("adminId");
 
-  useEffect(() => {
-    const fetchAdmins = async () => {
-      try {
-        const response = await adminAxiosInstance.get("/admins");
-        setAdmins(response.data.admins);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch admins. Please try again.");
-        setLoading(false);
-      }
-    };
+  // Fetch admins
+  const fetchAdmins = async () => {
+    try {
+      const response = await adminAxiosInstance.get("/admins");
+      setAdmins(response.data.admins);
+      setLoading(false);
+    } catch (err) {
+      setError("Failed to fetch admins. Please try again.");
+      setLoading(false);
+    }
+  };
 
+  // Fetch admins when component mounts
+  useEffect(() => {
     fetchAdmins();
   }, []);
 
-  const handleAdminChange = (newAdmin) => {
-    setAdmins((prevAdmins) => [...prevAdmins, newAdmin]);
+  // Handle admin change and refresh the admin list
+  const handleAdminChange = async () => {
+    await fetchAdmins(); // Refetch the updated admin list
   };
 
   return (
@@ -68,7 +71,9 @@ const AdminManager = () => {
               admins={admins}
               currentAdminId={currentAdminId} // Pass the logged-in admin's ID
               onDelete={(id) =>
-                setAdmins((prevAdmins) => prevAdmins.filter((admin) => admin.id !== id))
+                setAdmins((prevAdmins) =>
+                  prevAdmins.filter((admin) => admin.id !== id)
+                )
               }
             />
           </div>

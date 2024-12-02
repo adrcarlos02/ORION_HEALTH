@@ -9,23 +9,25 @@ const UserManager = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await adminAxiosInstance.get("/users");
-        setUsers(response.data.users);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch users. Please try again.");
-        setLoading(false);
-      }
-    };
+  // Function to fetch users
+  const fetchUsers = async () => {
+    try {
+      const response = await adminAxiosInstance.get("/users");
+      setUsers(response.data.users);
+      setLoading(false);
+    } catch (err) {
+      setError("Failed to fetch users. Please try again.");
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUsers();
   }, []);
 
-  const handleUserChange = (newUser) => {
-    setUsers((prevUsers) => [...prevUsers, newUser]);
+  // Refetch users after creating a new user
+  const handleUserChange = async () => {
+    await fetchUsers(); // Refetch the updated user list
   };
 
   return (
@@ -64,7 +66,9 @@ const UserManager = () => {
             <UserList
               users={users}
               onDelete={(id) =>
-                setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id))
+                setUsers((prevUsers) =>
+                  prevUsers.filter((user) => user.id !== id)
+                )
               }
             />
           </div>

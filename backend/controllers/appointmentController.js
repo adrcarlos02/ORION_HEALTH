@@ -178,15 +178,93 @@ export const cancelAppointment = async (req, res) => {
 
 //-------------(specific admin feature)-------------
 //Get all appointments 
+// export const getAllAppointments = async (req, res) => {
+//   try {
+//     const { doctorId, userId, date } = req.query; // Optional filters
+
+//     // Build query conditions dynamically based on filters
+//     const conditions = {};
+//     if (doctorId) conditions.doctorId = doctorId;
+//     if (userId) conditions.userId = userId;
+//     if (date) conditions.slotDate = date;
+
+//     // Fetch appointments with associated User and Doctor data
+//     const appointments = await Appointment.findAll({
+//       where: conditions,
+//       include: [
+//         {
+//           model: User,
+//           attributes: ['id', 'name', 'email', 'phone', 'image'], // Include specific user details
+//         },
+//         {
+//           model: Doctor,
+//           as: 'doctor',
+//           attributes: ['id', 'name', 'speciality', 'fees'], // Include specific doctor details
+//         },
+//       ],
+//       order: [['slotDate', 'DESC'], ['slotTime', 'ASC']], // Order by date and time
+//     });
+
+//     if (!appointments || appointments.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'No appointments found.',
+//       });
+//     }
+
+//     res.status(200).json({
+//       success: true,
+//       message: 'Appointments retrieved successfully.',
+//       appointments,
+//     });
+//   } catch (error) {
+//     console.error('Error fetching all appointments:', error.message);
+//     res.status(500).json({
+//       success: false,
+//       message: 'An error occurred while fetching appointments.',
+//     });
+//   }
+// };
+
 export const getAllAppointments = async (req, res) => {
   try {
-    const { doctorId, userId, date } = req.query; // Optional filters
+    const { doctorId, userId, date, view } = req.query;
 
-    // Build query conditions dynamically based on filters
+    // Build query conditions dynamically
     const conditions = {};
     if (doctorId) conditions.doctorId = doctorId;
     if (userId) conditions.userId = userId;
     if (date) conditions.slotDate = date;
+
+    // Calculate date range for `view`
+    const currentDate = new Date();
+    if (view === 'day') {
+      conditions.slotDate = sequelize.where(
+        sequelize.fn('DATE', sequelize.col('slotDate')),
+        '=',
+        currentDate.toISOString().split('T')[0] // Today's date
+      );
+    } else if (view === 'week') {
+      const startOfWeek = new Date(currentDate);
+      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay()); // Start of week (Sunday)
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6); // End of week (Saturday)
+      conditions.slotDate = {
+        [sequelize.Op.between]: [
+          startOfWeek.toISOString().split('T')[0],
+          endOfWeek.toISOString().split('T')[0],
+        ],
+      };
+    } else if (view === 'month') {
+      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); // Start of month
+      const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0); // End of month
+      conditions.slotDate = {
+        [sequelize.Op.between]: [
+          startOfMonth.toISOString().split('T')[0],
+          endOfMonth.toISOString().split('T')[0],
+        ],
+      };
+    }
 
     // Fetch appointments with associated User and Doctor data
     const appointments = await Appointment.findAll({
@@ -202,7 +280,7 @@ export const getAllAppointments = async (req, res) => {
           attributes: ['id', 'name', 'speciality', 'fees'], // Include specific doctor details
         },
       ],
-      order: [['slotDate', 'DESC'], ['slotTime', 'ASC']], // Order by date and time
+      order: [['slotDate', 'ASC'], ['slotTime', 'ASC']], // Order by date and time
     });
 
     if (!appointments || appointments.length === 0) {
@@ -227,7 +305,46 @@ export const getAllAppointments = async (req, res) => {
 };
 
 
+// Get Appointment by ID
+export const getAppointmentById = async (req, res) => {
+  try {
+    const { id } = req.params;
 
+    // Find the appointment by ID, including associated User and Doctor data
+    const appointment = await Appointment.findByPk(id, {
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'name', 'email', 'phone', 'image'], // Include specific user details
+        },
+        {
+          model: Doctor,
+          as: 'doctor',
+          attributes: ['id', 'name', 'speciality', 'fees'], // Include specific doctor details
+        },
+      ],
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Appointment not found.',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Appointment retrieved successfully.',
+      appointment,
+    });
+  } catch (error) {
+    console.error('Error fetching appointment by ID:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while fetching the appointment.',
+    });
+  }
+};
 
 
 //   console.log('cancelAppointment controller executed with data:', req.body);
@@ -291,7 +408,36 @@ export const getAppointmentsByDoctor = async (req, res) => {
 
 
 //Delete appointment
+// export const deleteAppointment = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+
+//     // Check if the appointment exists
+//     const appointment = await Appointment.findByPk(id);
+//     if (!appointment) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Appointment not found.',
+//       });
+//     }
+
+//     // Delete the appointment
+//     await appointment.destroy();
+//     res.status(200).json({
+//       success: true,
+//       message: 'Appointment deleted successfully.',
+//     });
+//   } catch (error) {
+//     console.error('Error deleting appointment:', error.message);
+//     res.status(500).json({
+//       success: false,
+//       message: 'An error occurred while deleting the appointment.',
+//     });
+//   }
+// };
+// Delete appointment
 export const deleteAppointment = async (req, res) => {
+  const transaction = await sequelize.transaction();
   try {
     const { id } = req.params;
 
@@ -304,13 +450,36 @@ export const deleteAppointment = async (req, res) => {
       });
     }
 
+    // Optional: Update Doctor's slots_booked
+    const doctor = await Doctor.findByPk(appointment.doctorId);
+    if (doctor) {
+      const slotsBooked = doctor.slots_booked || {};
+      const slotDate = appointment.slotDate;
+
+      if (slotsBooked[slotDate]) {
+        slotsBooked[slotDate] = slotsBooked[slotDate].filter((slot) => slot !== appointment.slotTime);
+        if (slotsBooked[slotDate].length === 0) {
+          delete slotsBooked[slotDate];
+        }
+      }
+
+      await Doctor.update(
+        { slots_booked: slotsBooked },
+        { where: { id: doctor.id }, transaction }
+      );
+    }
+
     // Delete the appointment
-    await appointment.destroy();
+    await appointment.destroy({ transaction });
+    await transaction.commit();
+
     res.status(200).json({
       success: true,
       message: 'Appointment deleted successfully.',
+      appointmentId: id, // Return the ID of the deleted appointment
     });
   } catch (error) {
+    await transaction.rollback();
     console.error('Error deleting appointment:', error.message);
     res.status(500).json({
       success: false,
@@ -318,6 +487,7 @@ export const deleteAppointment = async (req, res) => {
     });
   }
 };
+
 
 //update appointment
 export const updateAppointment = async (req, res) => {

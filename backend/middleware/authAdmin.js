@@ -1,35 +1,38 @@
 import jwt from "jsonwebtoken";
+import { promisify } from "util";
 
-const authAdmin = (req, res, next) => {
+const verifyToken = promisify(jwt.verify);
+
+const authAdmin = async (req, res, next) => {
   try {
-    // Extract Bearer token from the Authorization header
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ success: false, message: "Missing or invalid Authorization header." });
+    if (!authHeader) {
+      return res.status(401).json({ success: false, message: "Authorization header is missing." });
+    }
+
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ success: false, message: "Invalid Authorization header format." });
     }
 
     const token = authHeader.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ success: false, message: "Token is missing in the Authorization header." });
+    }
 
-    // Verify the token using the admin-specific secret
-    jwt.verify(token, process.env.JWT_SECRET_ADMIN, (err, decoded) => {
-      if (err) {
-        if (err.name === "TokenExpiredError") {
-          return res.status(401).json({ success: false, message: "Token has expired. Please log in again." });
-        }
-        return res.status(401).json({ success: false, message: "Invalid token. Please log in again." });
-      }
+    const decoded = await verifyToken(token, process.env.JWT_SECRET_ADMIN);
 
-      // Check if the role is admin
-      if (decoded.role !== "admin") {
-        return res.status(403).json({ success: false, message: "Access denied: Admins only." });
-      }
+    if (decoded.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Access denied: Admins only." });
+    }
 
-      req.adminId = decoded.id; // Attach admin ID to the request
-      req.decoded = decoded; // Optionally attach the full decoded token
-      next();
-    });
+    req.adminId = decoded.id;
+    req.decoded = decoded;
+    next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ success: false, message: "Token has expired. Please log in again." });
+    }
     console.error("Admin auth error:", error);
     res.status(500).json({ success: false, message: "Server error. Please try again later." });
   }
