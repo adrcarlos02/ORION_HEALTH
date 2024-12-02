@@ -6,7 +6,6 @@ const verifyToken = promisify(jwt.verify);
 const authAdmin = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-
     if (!authHeader) {
       return res.status(401).json({ success: false, message: "Authorization header is missing." });
     }
@@ -28,12 +27,14 @@ const authAdmin = async (req, res, next) => {
 
     req.adminId = decoded.id;
     req.decoded = decoded;
+
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({ success: false, message: "Token has expired. Please log in again." });
     }
-    console.error("Admin auth error:", error);
+
+    console.error("Admin auth error:", error.message);
     res.status(500).json({ success: false, message: "Server error. Please try again later." });
   }
 };

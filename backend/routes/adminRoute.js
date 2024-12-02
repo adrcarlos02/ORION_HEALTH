@@ -18,6 +18,7 @@ import {
   getAppointmentById,
   updateAppointment,
   deleteAppointment,
+  cancelAppointment
 } from '../controllers/appointmentController.js';
 
 import { registerUser } from "../controllers/userController.js";
@@ -50,6 +51,7 @@ adminRouter.get("/appointments", authAdmin, getAllAppointments);
 adminRouter.get("/appointments/:id", authAdmin, getAppointmentById);
 adminRouter.put("/appointments/:id", authAdmin, updateAppointment);
 adminRouter.delete("/appointments/:id", authAdmin, deleteAppointment);
+adminRouter.post('/appointments/cancel', authAdmin, cancelAppointment);
 
 // 404 fallback
 adminRouter.all("*", (req, res) => {

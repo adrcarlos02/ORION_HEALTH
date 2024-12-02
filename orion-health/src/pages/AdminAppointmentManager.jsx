@@ -59,16 +59,31 @@ const AdminAppointmentManager = () => {
     await fetchAppointments();
   };
 
-  // Cancel an appointment
+  // Cancel an appointment (POST request)
   const cancelAppointment = async (id) => {
     const confirmCancel = window.confirm("Are you sure you want to cancel this appointment?");
     if (confirmCancel) {
       try {
-        await axios.patch(`/appointments/${id}/cancel`);
+        // POST request to cancel appointment
+        await axios.post(`/admin/appointments/cancel`, { appointmentId: id });
         toast.success("Appointment cancelled successfully!");
-        fetchAppointments();
+        fetchAppointments(); // Refresh the list after canceling
       } catch (error) {
         toast.error("Failed to cancel appointment. Please try again.");
+      }
+    }
+  };
+
+  // Delete an appointment (DELETE request)
+  const deleteAppointment = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this appointment?");
+    if (confirmDelete) {
+      try {
+        await axios.delete(`/appointments/${id}`);
+        toast.success("Appointment deleted successfully!");
+        fetchAppointments();
+      } catch (error) {
+        toast.error("Failed to delete appointment. Please try again.");
       }
     }
   };
@@ -177,7 +192,7 @@ const AdminAppointmentManager = () => {
             name="doctor"
             onChange={handleFilterChange}
             value={filters.doctor}
-            className="p-2 rounded border border-gray-300 bg-white text-gray-800"
+            className="p-2 rounded border border-gray-300 bg-white text-gray-800 hover:border-blue-500 focus:outline-none"
           >
             <option value="">Filter by Doctor</option>
             {uniqueDoctors.map((doctor) => (
@@ -192,7 +207,7 @@ const AdminAppointmentManager = () => {
             name="date"
             onChange={handleFilterChange}
             value={filters.date}
-            className="p-2 rounded border border-gray-300 text-gray-800"
+            className="p-2 rounded border border-gray-300 text-gray-800 hover:border-blue-500 focus:outline-none"
           />
 
           {filters.date && (
@@ -200,7 +215,7 @@ const AdminAppointmentManager = () => {
               name="time"
               onChange={handleFilterChange}
               value={filters.time}
-              className="p-2 rounded border border-gray-300 bg-white text-gray-800"
+              className="p-2 rounded border border-gray-300 bg-white text-gray-800 hover:border-blue-500 focus:outline-none"
             >
               <option value="">Filter by Time</option>
               {availableTimes.map((slot) => (
@@ -215,7 +230,7 @@ const AdminAppointmentManager = () => {
             name="specialty"
             onChange={handleFilterChange}
             value={filters.specialty}
-            className="p-2 rounded border border-gray-300 bg-white text-gray-800"
+            className="p-2 rounded border border-gray-300 bg-white text-gray-800 hover:border-blue-500 focus:outline-none"
           >
             <option value="">Filter by Specialty</option>
             {uniqueSpecialties.map((specialty) => (
@@ -231,12 +246,12 @@ const AdminAppointmentManager = () => {
             placeholder="Search by ID"
             onChange={handleFilterChange}
             value={filters.id}
-            className="p-2 rounded border border-gray-300 text-gray-800"
+            className="p-2 rounded border border-gray-300 text-gray-800 hover:border-blue-500 focus:outline-none"
           />
 
           <button
             onClick={applyFilters}
-            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 focus:outline-none"
           >
             Apply Filters
           </button>
@@ -244,7 +259,7 @@ const AdminAppointmentManager = () => {
 
         <button
           onClick={refreshAppointments}
-          className="bg-green-500 text-white px-4 py-2 rounded mb-4 flex items-center"
+          className="bg-green-500 text-white px-4 py-2 rounded mb-4 flex items-center hover:bg-green-600 focus:outline-none"
         >
           {refreshing && (
             <span className="animate-spin border-2 border-white border-t-transparent border-solid rounded-full w-4 h-4 mr-2"></span>
@@ -257,7 +272,7 @@ const AdminAppointmentManager = () => {
           {currentPageAppointments.map((appointment) => (
             <div
               key={appointment.id}
-              className="p-4 bg-white rounded-lg shadow border-l-4 flex flex-col justify-between"
+              className="p-4 bg-white rounded-lg shadow border-l-4 flex flex-col justify-between hover:shadow-lg transition-all"
               style={{
                 borderColor: appointment.cancelled ? "red" : "green",
               }}
@@ -276,17 +291,26 @@ const AdminAppointmentManager = () => {
                 <p className="text-black">Specialty: {appointment.doctor.speciality}</p>
               </div>
 
-              <button
-                onClick={() => cancelAppointment(appointment.id)}
-                disabled={appointment.cancelled}
-                className={`mt-4 px-3 py-1 rounded ${
-                  appointment.cancelled
-                    ? "bg-gray-400 text-gray-700 cursor-not-allowed"
-                    : "bg-red-500 text-white hover:bg-red-600"
-                }`}
-              >
-                {appointment.cancelled ? "Cancelled" : "Cancel Appointment"}
-              </button>
+              <div className="mt-4 flex flex-col gap-2">
+                <button
+                  onClick={() => cancelAppointment(appointment.id)}
+                  disabled={appointment.cancelled}
+                  className={`px-3 py-1 rounded ${
+                    appointment.cancelled
+                      ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                      : "bg-red-500 text-white hover:bg-red-600"
+                  }`}
+                >
+                  {appointment.cancelled ? "Cancelled" : "Cancel Appointment"}
+                </button>
+
+                <button
+                  onClick={() => deleteAppointment(appointment.id)}
+                  className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+                >
+                  Delete Appointment
+                </button>
+              </div>
             </div>
           ))}
         </div>

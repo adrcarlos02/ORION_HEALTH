@@ -121,12 +121,11 @@ export const getAppointmentsByUser = async (req, res) => {
 
 // Cancel Appointment
 export const cancelAppointment = async (req, res) => {
-  console.log('cancelAppointment controller executed with data:', req.body);
+  const { appointmentId } = req.body; // Get appointmentId from the request body
+  const isAdmin = req.decoded.role === "admin"; // Check if the user is an admin
+
   const transaction = await sequelize.transaction();
   try {
-    const { appointmentId } = req.body;
-    const userId = req.userId; // Retrieved from auth middleware
-
     // Find the appointment
     const appointment = await Appointment.findByPk(appointmentId);
 
@@ -135,10 +134,10 @@ export const cancelAppointment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Appointment not found.' });
     }
 
-    // Ensure the authenticated user owns the appointment
-    if (appointment.userId !== userId) {
+    // If not an admin, check if the appointment belongs to the logged-in user
+    if (!isAdmin && appointment.userId !== req.userId) {
       await transaction.rollback();
-      return res.status(403).json({ success: false, message: 'Unauthorized action.' });
+      return res.status(403).json({ success: false, message: 'Unauthorized action. You can only cancel your own appointments.' });
     }
 
     // Mark the appointment as canceled
@@ -173,58 +172,59 @@ export const cancelAppointment = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error canceling appointment.' });
   }
 };
+// export const cancelAppointment = async (req, res) => {
+//   const { appointmentId } = req.body; // Get appointmentId from the request body
+//   const isAdmin = req.isAdmin; // Make sure that `isAdmin` is part of the authenticated user data
 
-
-
-//-------------(specific admin feature)-------------
-//Get all appointments 
-// export const getAllAppointments = async (req, res) => {
+//   const transaction = await sequelize.transaction();
 //   try {
-//     const { doctorId, userId, date } = req.query; // Optional filters
+//     // Find the appointment
+//     const appointment = await Appointment.findByPk(appointmentId);
 
-//     // Build query conditions dynamically based on filters
-//     const conditions = {};
-//     if (doctorId) conditions.doctorId = doctorId;
-//     if (userId) conditions.userId = userId;
-//     if (date) conditions.slotDate = date;
-
-//     // Fetch appointments with associated User and Doctor data
-//     const appointments = await Appointment.findAll({
-//       where: conditions,
-//       include: [
-//         {
-//           model: User,
-//           attributes: ['id', 'name', 'email', 'phone', 'image'], // Include specific user details
-//         },
-//         {
-//           model: Doctor,
-//           as: 'doctor',
-//           attributes: ['id', 'name', 'speciality', 'fees'], // Include specific doctor details
-//         },
-//       ],
-//       order: [['slotDate', 'DESC'], ['slotTime', 'ASC']], // Order by date and time
-//     });
-
-//     if (!appointments || appointments.length === 0) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'No appointments found.',
-//       });
+//     if (!appointment) {
+//       await transaction.rollback();
+//       return res.status(404).json({ success: false, message: 'Appointment not found.' });
 //     }
 
-//     res.status(200).json({
-//       success: true,
-//       message: 'Appointments retrieved successfully.',
-//       appointments,
-//     });
+//     // Check if the authenticated user is an admin
+//     if (!isAdmin) {
+//       await transaction.rollback();
+//       return res.status(403).json({ success: false, message: 'Unauthorized action.' });
+//     }
+
+//     // Mark the appointment as canceled
+//     appointment.cancelled = true;
+//     await appointment.save({ transaction });
+
+//     // Optional: Update Doctor's slots_booked (if applicable)
+//     const doctor = await Doctor.findByPk(appointment.doctorId);
+//     if (doctor) {
+//       const slotsBooked = doctor.slots_booked || {};
+//       const slotDate = appointment.slotDate;
+
+//       // Remove the canceled slot from slots_booked
+//       if (slotsBooked[slotDate]) {
+//         slotsBooked[slotDate] = slotsBooked[slotDate].filter((slot) => slot !== appointment.slotTime);
+//         if (slotsBooked[slotDate].length === 0) {
+//           delete slotsBooked[slotDate];
+//         }
+//       }
+
+//       await Doctor.update(
+//         { slots_booked: slotsBooked },
+//         { where: { id: doctor.id }, transaction }
+//       );
+//     }
+
+//     await transaction.commit();
+//     return res.status(200).json({ success: true, message: 'Appointment canceled successfully.' });
 //   } catch (error) {
-//     console.error('Error fetching all appointments:', error.message);
-//     res.status(500).json({
-//       success: false,
-//       message: 'An error occurred while fetching appointments.',
-//     });
+//     await transaction.rollback();
+//     console.error('Error canceling appointment:', error.message);
+//     return res.status(500).json({ success: false, message: 'Error canceling appointment.' });
 //   }
 // };
+
 
 export const getAllAppointments = async (req, res) => {
   try {
