@@ -110,20 +110,6 @@ const Sidebar = () => {
                 )}
               </li>
 
-              {/* Profile */}
-              <li>
-                <Link
-                  to="/admin/profile"
-                  className="flex items-center p-3 text-white rounded-lg hover:bg-gray-700"
-                >
-                  <div className="grid place-items-center w-8 h-8 bg-gray-600 rounded-full">
-                    P
-                  </div>
-                  {(isHovered || isExpanded) && (
-                    <span className="ml-4">Profile</span>
-                  )}
-                </Link>
-              </li>
             </ul>
           </div>
         </div>
