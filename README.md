@@ -1,5 +1,3 @@
-Here’s an improved and detailed version of your README, incorporating your reference guide and updates:
-
 Orion Health
 
 Orion Health is a full-stack clinic appointment booking application that simplifies the process of connecting patients with healthcare providers. The platform offers role-based access control (RBAC) to manage users, doctors, and administrators, ensuring a smooth, secure, and efficient booking experience.
